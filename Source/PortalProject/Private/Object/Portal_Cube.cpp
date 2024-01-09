@@ -1,24 +1,26 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+
 
 
 #include "Object/Portal_Cube.h"
 
-// Sets default values
+
 APortal_Cube::APortal_Cube()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+ 	
+	PrimaryActorTick.bCanEverTick = false;
 
+	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>("MeshComp");
+	MeshComp -> SetupAttachment(RootComponent);
 }
 
-// Called when the game starts or when spawned
+
 void APortal_Cube::BeginPlay()
 {
 	Super::BeginPlay();
 	
 }
 
-// Called every frame
+
 void APortal_Cube::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
