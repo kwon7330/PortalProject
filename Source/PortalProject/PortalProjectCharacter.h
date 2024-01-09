@@ -3,10 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "InputActionValue.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
 #include "PortalProjectCharacter.generated.h"
 
+class APortal_Cube;
 class UInputComponent;
 class USkeletalMeshComponent;
 class UCameraComponent;
@@ -40,6 +42,9 @@ class APortalProjectCharacter : public ACharacter
 	/** Move Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* MoveAction;
+
+	
+
 	
 public:
 	APortalProjectCharacter();
@@ -73,19 +78,54 @@ protected:
 	void Look(const FInputActionValue& Value);
 
 protected:
-	// APawn interface
+	
 	virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;
-	// End of APawn interface
+	
 
 public:
 	/** Returns Mesh1P subobject **/
 	USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }
 	/** Returns FirstPersonCameraComponent subobject **/
+	UPROPERTY(EditAnywhere,Category="Portal_Settings")
+	UCameraComponent* CameraComp;
+	
 	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
 
+
+//=================================================================================================================================	
+
+
+	UPROPERTY(EditAnywhere,Category="Portal_Input")
+	UInputAction* PickUpAction;
+	
+	// 큐브를 붙일 컴퍼넌트
 public:
 	UPROPERTY(EditAnywhere)
-	USceneComponent* SceneComp;
+	UStaticMeshComponent* PortalGun;
+	UPROPERTY(VisibleAnywhere)
+	USceneComponent* AttachComp;
+
+public:
+	// 큐브를 들고 있는가?
+	bool bHasCube = false;
+	// 잡을 수 있는 범위
+	UPROPERTY(EditAnywhere,Category="Cube")
+	float PickCube = 100;
+
+	// 들고 있는 큐브
+	UPROPERTY(EditAnywhere)
+	AActor* OwnedCube = nullptr;
+
+	// 큐브를 잡기 처리할 함수.
+	void Pickup(const FInputActionValue& Value);
+	// 큐브를 컴포넌트로 붙이는 함수.
+	void AttachCube(AActor* Cube);
+	// 큐브를 놓기를 처리할 함수.
+	void Released(const FInputActionValue& Value);
+	// 큐브를 컴포넌트로 부터 때는 함수.
+	void DetachCube(AActor* Cube);
+	
+//=================================================================================================================================	
 	
 
 };
