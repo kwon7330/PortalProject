@@ -11,6 +11,7 @@ APortal_Cube::APortal_Cube()
 
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>("MeshComp");
 	MeshComp -> SetupAttachment(RootComponent);
+	
 }
 
 

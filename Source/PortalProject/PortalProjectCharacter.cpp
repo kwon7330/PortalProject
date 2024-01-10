@@ -13,7 +13,9 @@
 #include "Engine/LocalPlayer.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Object/Portal_Bullet.h"
 #include "Object/Portal_Cube.h"
+#include "Object/Portal_Tablet.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -45,6 +47,7 @@ APortalProjectCharacter::APortalProjectCharacter()
 	// Mesh1P->SetRelativeLocation(FVector(-30.f, 0.f, -150.f));
 
 	PortalGun = CreateDefaultSubobject<UStaticMeshComponent>("PortalGun");
+	PortalGun -> SetupAttachment(GetMesh());
 	
 	AttachComp = CreateDefaultSubobject<USceneComponent>("AttachComp");
 	AttachComp ->SetupAttachment(GetMesh());
@@ -52,7 +55,7 @@ APortalProjectCharacter::APortalProjectCharacter()
 	AttachComp-> SetRelativeLocation(FVector(0,101,135));
 
 	// 플레이어 시점 고정.
-	GetCharacterMovement()->bOrientRotationToMovement = false;
+	bUseControllerRotationYaw = true;
 }
 
 void APortalProjectCharacter::BeginPlay()
@@ -92,6 +95,9 @@ void APortalProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 		EnhancedInputComponent->BindAction(PickUpAction, ETriggerEvent::Started, this, &APortalProjectCharacter::Pickup);
 		EnhancedInputComponent->BindAction(PickUpAction, ETriggerEvent::Completed, this, &APortalProjectCharacter::Released);
 
+		// 여는 포탈 날리기
+		EnhancedInputComponent->BindAction(OpenPortalAction, ETriggerEvent::Started, this, &APortalProjectCharacter::ShootOpenPortal);
+
 	}
 	else
 	{
@@ -114,6 +120,34 @@ void APortalProjectCharacter::DetachCube(AActor* Cube)
 	MeshComp->SetSimulatePhysics(true);
 	MeshComp->DetachFromComponent(FDetachmentTransformRules::KeepRelativeTransform);
 }
+//=================================================================================================================================	
+
+void APortalProjectCharacter::ShootOpenPortal(const FInputActionValue& Value)
+{
+	UE_LOG(LogTemp,Warning,TEXT("Shot"));
+	// FHitResult HitInfo;
+	// FVector StartPoint = CameraComp->GetComponentLocation();
+	// FVector EndPoint = StartPoint + CameraComp->GetForwardVector() * 30000;
+	// FCollisionQueryParams Params;
+	// Params.AddIgnoredActor(this);
+	//
+	// bool bHit = GetWorld()->LineTraceSingleByChannel(HitInfo,StartPoint,EndPoint,ECollisionChannel::ECC_Visibility,Params);
+	// // 만약 맞은 대상이 PortalTablet이라면, 여는 포탈을 생성하고싶다.
+	// if(bHit == true)
+	// {
+	// 	
+	// }
+	FTransform FirePoint = PortalGun->GetSocketTransform(FName("FirePoint"));
+	GetWorld()->SpawnActor<APortal_Bullet>(BulletFactory,FirePoint);
+
+	
+}
+
+void APortalProjectCharacter::ShootClosePortal()
+{
+	
+}
+//=================================================================================================================================	
 
 void APortalProjectCharacter::Pickup(const FInputActionValue& Value)
 {
@@ -135,7 +169,7 @@ void APortalProjectCharacter::Pickup(const FInputActionValue& Value)
 		{
 				continue;
 		}
-		float Distance = FVector::Dist(GetActorLocation(),TempCube->GetActorLocation());
+		float Distance = FVector::Dist(PortalGun->GetComponentLocation(),TempCube->GetActorLocation());
 		if(Distance>PickCube)
 		{
 			continue;
@@ -221,3 +255,5 @@ bool APortalProjectCharacter::GetHasRifle()
 {
 	return bHasRifle;
 }
+
+//=================================================================================================================================	

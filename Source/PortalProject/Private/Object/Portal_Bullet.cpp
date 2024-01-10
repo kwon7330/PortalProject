@@ -3,25 +3,39 @@
 
 #include "Object/Portal_Bullet.h"
 
-// Sets default values
+#include "Chaos/Deformable/ChaosDeformableCollisionsProxy.h"
+#include "Components/SphereComponent.h"
+#include "GameFramework/ProjectileMovementComponent.h"
+
+
 APortal_Bullet::APortal_Bullet()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+ 	
 	PrimaryActorTick.bCanEverTick = true;
+	SphereComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
+	SetRootComponent(SphereComp);
 
+	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
+	MeshComp->SetupAttachment(SphereComp);
+
+	ProjectileMovementComp = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovementComp"));
+	ProjectileMovementComp -> InitialSpeed = 2000;
+	ProjectileMovementComp -> MaxSpeed = 2000;
 }
 
-// Called when the game starts or when spawned
+
 void APortal_Bullet::BeginPlay()
 {
 	Super::BeginPlay();
 	
 }
 
-// Called every frame
+
 void APortal_Bullet::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
 }
+
+
 

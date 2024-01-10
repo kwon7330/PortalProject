@@ -8,6 +8,8 @@
 #include "Logging/LogMacros.h"
 #include "PortalProjectCharacter.generated.h"
 
+class APortal_Bullet;
+class APortal_Tablet;
 class APortal_Cube;
 class UInputComponent;
 class USkeletalMeshComponent;
@@ -97,6 +99,9 @@ public:
 
 	UPROPERTY(EditAnywhere,Category="Portal_Input")
 	UInputAction* PickUpAction;
+
+	UPROPERTY(EditAnywhere,Category="Portal_Input")
+	UInputAction* OpenPortalAction;
 	
 	// 큐브를 붙일 컴퍼넌트
 public:
@@ -126,7 +131,17 @@ public:
 	void DetachCube(AActor* Cube);
 	
 //=================================================================================================================================	
-	
+	UPROPERTY(EditAnywhere)
+	APortal_Tablet* PortalTablet;
 
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<APortal_Bullet> BulletFactory;
+	
+	void ShootOpenPortal(const FInputActionValue& Value);
+	void ShootClosePortal();
+
+	// 포탈이 쏴지면 
+
+	
 };
 
