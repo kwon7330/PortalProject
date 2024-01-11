@@ -10,7 +10,6 @@
 
 APortal_Bullet::APortal_Bullet()
 {
- 	
 	PrimaryActorTick.bCanEverTick = true;
 	SphereComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
 	SetRootComponent(SphereComp);
@@ -27,7 +26,19 @@ APortal_Bullet::APortal_Bullet()
 void APortal_Bullet::BeginPlay()
 {
 	Super::BeginPlay();
+
+	switch (Type)
+	{
+	case EPortalType::Player1Blue:
+		break;
+	case EPortalType::Player1Purple:
+		break;
+	case EPortalType::Player2Orange:
+		break;
+	case EPortalType::Player2Red:
+		break;
 	
+	}
 }
 
 
@@ -35,7 +46,12 @@ void APortal_Bullet::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+
 }
+
+
+
+
 
 
 

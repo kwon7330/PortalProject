@@ -4,10 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "../PortalProject.h"
 #include "Portal_Bullet.generated.h"
 
 class UProjectileMovementComponent;
 class USphereComponent;
+
+
 
 UCLASS()
 class PORTALPROJECT_API APortal_Bullet : public AActor
@@ -33,6 +36,10 @@ public:
 	UStaticMeshComponent* MeshComp;
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Bullet")
 	UProjectileMovementComponent* ProjectileMovementComp;
+
+public:
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="BulletTypeSettings")
+	EPortalType Type;
 
 	
 	

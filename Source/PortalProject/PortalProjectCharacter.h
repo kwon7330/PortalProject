@@ -8,6 +8,7 @@
 #include "Logging/LogMacros.h"
 #include "PortalProjectCharacter.generated.h"
 
+class APortal_CloseBullet;
 class APortal_Bullet;
 class APortal_Tablet;
 class APortal_Cube;
@@ -99,10 +100,13 @@ public:
 
 	UPROPERTY(EditAnywhere,Category="Portal_Input")
 	UInputAction* PickUpAction;
-
 	UPROPERTY(EditAnywhere,Category="Portal_Input")
-	UInputAction* OpenPortalAction;
-	
+	UInputAction* LeftClickShootAction;
+	UPROPERTY(EditAnywhere,Category="Portal_Input")
+	UInputAction* RightClickShootAction;
+
+//=================================================================================================================================	
+
 	// 큐브를 붙일 컴퍼넌트
 public:
 	UPROPERTY(EditAnywhere)
@@ -136,9 +140,11 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<APortal_Bullet> BulletFactory;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<APortal_Bullet> CloseBulletFactory;
 	
-	void ShootOpenPortal(const FInputActionValue& Value);
-	void ShootClosePortal();
+	void LeftClickPortal(const FInputActionValue& Value);
+	void RightClickPortal(const FInputActionValue& Value);
 
 	// 포탈이 쏴지면 
 

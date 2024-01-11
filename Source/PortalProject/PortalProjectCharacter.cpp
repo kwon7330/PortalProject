@@ -14,6 +14,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Object/Portal_Bullet.h"
+#include "Object/Portal_CloseBullet.h"
 #include "Object/Portal_Cube.h"
 #include "Object/Portal_Tablet.h"
 
@@ -84,19 +85,19 @@ void APortalProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 		// Jumping
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
-
 		// Moving
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &APortalProjectCharacter::Move);
-
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &APortalProjectCharacter::Look);
 
+		
 		// 큐브 Pickup
 		EnhancedInputComponent->BindAction(PickUpAction, ETriggerEvent::Started, this, &APortalProjectCharacter::Pickup);
 		EnhancedInputComponent->BindAction(PickUpAction, ETriggerEvent::Completed, this, &APortalProjectCharacter::Released);
-
 		// 여는 포탈 날리기
-		EnhancedInputComponent->BindAction(OpenPortalAction, ETriggerEvent::Started, this, &APortalProjectCharacter::ShootOpenPortal);
+		EnhancedInputComponent->BindAction(LeftClickShootAction, ETriggerEvent::Started, this, &APortalProjectCharacter::LeftClickPortal);
+		// 닫는 포탈 날리기
+		EnhancedInputComponent->BindAction(RightClickShootAction, ETriggerEvent::Started, this, &APortalProjectCharacter::RightClickPortal);
 
 	}
 	else
@@ -122,36 +123,33 @@ void APortalProjectCharacter::DetachCube(AActor* Cube)
 }
 //=================================================================================================================================	
 
-void APortalProjectCharacter::ShootOpenPortal(const FInputActionValue& Value)
+void APortalProjectCharacter::LeftClickPortal(const FInputActionValue& Value)
 {
-	UE_LOG(LogTemp,Warning,TEXT("Shot"));
-	// FHitResult HitInfo;
-	// FVector StartPoint = CameraComp->GetComponentLocation();
-	// FVector EndPoint = StartPoint + CameraComp->GetForwardVector() * 30000;
-	// FCollisionQueryParams Params;
-	// Params.AddIgnoredActor(this);
-	//
-	// bool bHit = GetWorld()->LineTraceSingleByChannel(HitInfo,StartPoint,EndPoint,ECollisionChannel::ECC_Visibility,Params);
-	// // 만약 맞은 대상이 PortalTablet이라면, 여는 포탈을 생성하고싶다.
-	// if(bHit == true)
-	// {
-	// 	
-	// }
+	UE_LOG(LogTemp,Warning,TEXT("LeftClickShoot"));
+	// 만약 컴퍼넌트의 주인이 플레이어 1 이라면 파란 색 포탈을 생성하고, 주인이 플레이어 2라면 주황색 포탈을 생성한다.
 	FTransform FirePoint = PortalGun->GetSocketTransform(FName("FirePoint"));
-	GetWorld()->SpawnActor<APortal_Bullet>(BulletFactory,FirePoint);
-
+	APortal_Bullet* Bullet = GetWorld()->SpawnActorDeferred<APortal_Bullet>(BulletFactory,FirePoint);
+	Bullet->Type = EPortalType::Player1Blue;
+	UGameplayStatics::FinishSpawningActor(Bullet, FirePoint);
+	
 	
 }
 
-void APortalProjectCharacter::ShootClosePortal()
+void APortalProjectCharacter::RightClickPortal(const FInputActionValue& Value)
 {
-	
+	// 만약 컴퍼넌트의 주인이 플레이어 1 이라면 보라 색 포탈을 생성하고, 주인이 플레이어 2라면 붉은색 포탈을 생성한다.
+	UE_LOG(LogTemp,Warning,TEXT("RightClickShoot"));
+	FTransform FirePoint = PortalGun->GetSocketTransform(FName("FirePoint"));
+	APortal_Bullet* Bullet = GetWorld()->SpawnActorDeferred<APortal_Bullet>(BulletFactory,FirePoint);
+	Bullet->Type = EPortalType::Player1Purple;
+	UGameplayStatics::FinishSpawningActor(Bullet, FirePoint);
 }
+
 //=================================================================================================================================	
 
 void APortalProjectCharacter::Pickup(const FInputActionValue& Value)
 {
-	UE_LOG(LogTemp,Warning,TEXT("11111111111111111111111111111"));
+	//UE_LOG(LogTemp,Warning,TEXT("11111111111111111111111111111"));
 
 	// 오브젝트를 들고 있지 않다면, 일정 범위 안에 있는 큐브를 잡는다.
 	if(bHasCube == true)
@@ -164,7 +162,7 @@ void APortalProjectCharacter::Pickup(const FInputActionValue& Value)
 	
 	for(auto TempCube : AllActors)
 	{
-		UE_LOG(LogTemp,Warning,TEXT("@@@@@@@@@@@@@@@@@@@@@@@@@@@@"));
+		//UE_LOG(LogTemp,Warning,TEXT("@@@@@@@@@@@@@@@@@@@@@@@@@@@@"));
 		if(TempCube->GetName().Contains("BP_PortalCube") == false)
 		{
 				continue;
@@ -174,7 +172,7 @@ void APortalProjectCharacter::Pickup(const FInputActionValue& Value)
 		{
 			continue;
 		}
-		UE_LOG(LogTemp,Warning,TEXT("22222222222222222222222222222222"));
+		//UE_LOG(LogTemp,Warning,TEXT("22222222222222222222222222222222"));
 		bHasCube = true;
 		OwnedCube = TempCube;
 		OwnedCube->SetOwner(this);

@@ -1,24 +1,37 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+
 
 
 #include "Object/Portal_CloseBullet.h"
 
-// Sets default values
+#include "NavigationSystemTypes.h"
+#include "Components/CapsuleComponent.h"
+#include "Components/SphereComponent.h"
+#include "GameFramework/ProjectileMovementComponent.h"
+
+
 APortal_CloseBullet::APortal_CloseBullet()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+ 	
 	PrimaryActorTick.bCanEverTick = true;
+	SphereComp = CreateDefaultSubobject<USphereComponent>("SphereComp");
+	SetRootComponent(SphereComp);
 
+	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>("MeshComp");
+	MeshComp -> SetupAttachment(SphereComp);
+
+	ProjectileMovementComp = CreateDefaultSubobject<UProjectileMovementComponent>("ProjectileMovementComp");
+	ProjectileMovementComp -> InitialSpeed = 2000;
+	ProjectileMovementComp -> MaxSpeed = 2000;
 }
 
-// Called when the game starts or when spawned
+
 void APortal_CloseBullet::BeginPlay()
 {
 	Super::BeginPlay();
 	
 }
 
-// Called every frame
+
 void APortal_CloseBullet::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);

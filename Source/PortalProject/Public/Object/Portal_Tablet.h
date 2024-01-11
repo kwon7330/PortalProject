@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Portal_Bullet.h"
 #include "GameFramework/Actor.h"
 #include "Portal_Tablet.generated.h"
 
@@ -45,5 +46,9 @@ public:
 	UFUNCTION()
 	void OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
-	void SpawnPortal();
+	void SpawnOpenPortal();
+
+	UPROPERTY()
+	APortal_Bullet* Bullet;
+	
 };

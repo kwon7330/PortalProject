@@ -7,6 +7,7 @@
 #include "Components/BoxComponent.h"
 #include "EntitySystem/MovieSceneEntitySystemRunner.h"
 #include "Object/Portal_Bullet.h"
+#include "Object/Portal_CloseBullet.h"
 #include "Object/Portal_Cube.h"
 
 
@@ -32,7 +33,7 @@ void APortal_Tablet::BeginPlay()
 	BoxComponent->OnComponentBeginOverlap.AddDynamic(this,&APortal_Tablet::OnOverlapBegin);
 }
 
-// Called every frame
+
 void APortal_Tablet::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -42,22 +43,36 @@ void APortal_Tablet::Tick(float DeltaTime)
 void APortal_Tablet::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	UE_LOG(LogTemp,Warning,TEXT("Overlaped!!!!!!!!!!!!!!!!!!!!!!!!!!"));
-	// 포탈 총알이 부딪히면
-	auto Bullet = Cast<APortal_Bullet>(OtherActor);
-	if(Bullet != nullptr)
+	//UE_LOG(LogTemp,Warning,TEXT("Overlaped!!!!!!!!!!!!!!!!!!!!!!!!!!"));
+	// 포탈 총알이 부딪히면 총알이 포탈을 여는 총알이면 여는 포탈을 생성한다.
+	auto Portal = Cast<APortal_Bullet>(OtherActor);
+	if(Portal!= nullptr)
 	{
-		UE_LOG(LogTemp,Warning,TEXT("IsBullet!!!!!!!!!!!!!!!!!!!!!!!!!!!"));
-		// 테블릿의 중앙에 포탈을 생성하고싶다.
-		SpawnPortal();
+		if(Portal->Type == EPortalType::Player1Blue)
+		{
+			UE_LOG(LogTemp,Warning,TEXT("BluePortal"));
+		}
+		else if(Portal->Type == EPortalType::Player1Purple)
+		{
+			UE_LOG(LogTemp,Warning,TEXT("PuplePortal"));
+		}
+		else if(Portal->Type == EPortalType::Player2Orange)
+		{
+			UE_LOG(LogTemp,Warning,TEXT("OrangePortal"));
+		}
+		else if(Portal->Type == EPortalType::Player2Red)
+		{
+			UE_LOG(LogTemp,Warning,TEXT("RedPortal"));
+
+		}
 	}
 }
 
-void APortal_Tablet::SpawnPortal()
+void APortal_Tablet::SpawnOpenPortal()
 {
-	UE_LOG(LogTemp,Warning,TEXT("SpawnPortal@@@@@@@@@@@@@@@"));
+	
 	FTransform SpawnPortalPoint = SpawnPoint->GetComponentTransform();
 	GetWorld()->SpawnActor<APortal_Cube>(SpawnFactory,SpawnPortalPoint);
-	
 }
+
 
