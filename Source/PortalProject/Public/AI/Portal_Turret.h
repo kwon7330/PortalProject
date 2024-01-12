@@ -7,6 +7,7 @@
 #include "Portal_Turret.generated.h"
 
 
+class UTurretFSM;
 
 UCLASS()
 class PORTALPROJECT_API APortal_Turret : public ACharacter
@@ -34,7 +35,8 @@ public:
 	UArrowComponent* AttackPoint;
 	
 	
-	
+	UPROPERTY(EditAnywhere)
+	UTurretFSM* TurretFsm;
 	
 //=====================================================================================================================
 

@@ -34,11 +34,12 @@ public:
 	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-
+	UPROPERTY()
 	APortal_Turret* Self;
+	UPROPERTY()
 	ACharacter* Target;
-
-	AAIController* Ai;
+	UPROPERTY()
+	AAIController* AI;
 	
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="TurretSettings")
 	ETurretState State;
@@ -52,7 +53,7 @@ private:
 	void TickIdle();
 	void TickAttack();
 	void TickDie();
-	void RaserAttack();
+	void Attack();
 
 public:
 	void SetState(ETurretState Next);

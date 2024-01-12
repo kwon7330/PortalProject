@@ -3,6 +3,7 @@
 
 #include "AI/Portal_Turret.h"
 
+#include "AI/TurretFSM.h"
 #include "Components/ArrowComponent.h"
 #include "Components/CapsuleComponent.h"
 
@@ -28,6 +29,8 @@ APortal_Turret::APortal_Turret()
 	AttackPoint->SetupAttachment(RootComponent);
 	//(X=25.000000,Y=0.000000,Z=3.600000)
 	AttackPoint->SetRelativeLocation(FVector(25.0f,0.f,3.6f));
+
+	TurretFsm = CreateDefaultSubobject<UTurretFSM>("TurretFsm");
 	
 	
 //=====================================================================================================================

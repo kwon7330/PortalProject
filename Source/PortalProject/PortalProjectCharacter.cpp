@@ -9,9 +9,11 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "PlayerMove.h"
 #include "AI/Portal_Turret.h"
 #include "Engine/LocalPlayer.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Object/Portal_Bullet.h"
 #include "Object/Portal_CloseBullet.h"
@@ -38,6 +40,14 @@ APortalProjectCharacter::APortalProjectCharacter()
 	CameraComp->SetRelativeLocation(FVector(26.0f, 0.f, 75.f));
 	CameraComp->bUsePawnControlRotation = true;
 
+	ArmComp = CreateDefaultSubobject<USpringArmComponent>("ArmComp");
+	ArmComp -> SetupAttachment(CameraComp);
+	ArmComp -> TargetArmLength = 35.f;
+	//(X=-2.707669,Y=15.355950,Z=-8.469816)
+	ArmComp -> SetRelativeLocation(FVector(-2.7f,15.f,-8.4f));
+	ArmComp -> SetRelativeRotation(FRotator(0,0,169.f));
+	
+
 	// Create a mesh component that will be used when being viewed from a '1st person' view (when controlling this pawn)
 	// Mesh1P = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh1P"));
 	// Mesh1P->SetOnlyOwnerSee(true);
@@ -48,15 +58,22 @@ APortalProjectCharacter::APortalProjectCharacter()
 	// Mesh1P->SetRelativeLocation(FVector(-30.f, 0.f, -150.f));
 
 	PortalGun = CreateDefaultSubobject<UStaticMeshComponent>("PortalGun");
-	PortalGun -> SetupAttachment(GetMesh());
+	PortalGun -> SetupAttachment(ArmComp);
+	//(X=-38.824636,Y=-2.561624,Z=-0.000000)
+	//(Pitch=0.000000,Yaw=-159.999999,Roll=0.000000)
+	//0.1
+	PortalGun->SetRelativeLocationAndRotation(FVector(-38.f,-2.5f,0.f),FRotator(0.f,-160.f,0.f));
+	PortalGun->SetRelativeScale3D(FVector(0.1f));
 	
 	AttachComp = CreateDefaultSubobject<USceneComponent>("AttachComp");
-	AttachComp ->SetupAttachment(GetMesh());
+	AttachComp ->SetupAttachment(PortalGun,FName(TEXT("FirePoint")));
 	//(X=-0.000000,Y=101.808839,Z=135.134964)
-	AttachComp-> SetRelativeLocation(FVector(0,101,135));
+	AttachComp-> SetRelativeLocation(FVector(0.f));
 
 	// 플레이어 시점 고정.
 	bUseControllerRotationYaw = true;
+	
+	MoveComp = CreateDefaultSubobject<UPlayerMove>("MoveComp");
 }
 
 void APortalProjectCharacter::BeginPlay()
@@ -82,13 +99,13 @@ void APortalProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 	// Set up action bindings
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{
-		// Jumping
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
-		// Moving
-		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &APortalProjectCharacter::Move);
-		// Looking
-		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &APortalProjectCharacter::Look);
+		// // Jumping
+		// EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
+		// EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
+		// // Moving
+		// EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &APortalProjectCharacter::Move);
+		// // Looking
+		// EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &APortalProjectCharacter::Look);
 
 		
 		// 큐브 Pickup
@@ -98,7 +115,7 @@ void APortalProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 		EnhancedInputComponent->BindAction(LeftClickShootAction, ETriggerEvent::Started, this, &APortalProjectCharacter::LeftClickPortal);
 		// 닫는 포탈 날리기
 		EnhancedInputComponent->BindAction(RightClickShootAction, ETriggerEvent::Started, this, &APortalProjectCharacter::RightClickPortal);
-
+		MoveComp->SetupPlayerInput(PlayerInputComponent);
 	}
 	else
 	{
@@ -112,7 +129,7 @@ void APortalProjectCharacter::AttachCube(AActor* Cube)
 
 	auto MeshComp = Cube->GetComponentByClass<UStaticMeshComponent>();
 	MeshComp->SetSimulatePhysics(false);
-	MeshComp->AttachToComponent(AttachComp,FAttachmentTransformRules::SnapToTargetIncludingScale);
+	MeshComp->AttachToComponent(AttachComp,FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 }
 
 void APortalProjectCharacter::DetachCube(AActor* Cube)
@@ -218,31 +235,31 @@ void APortalProjectCharacter::Released(const FInputActionValue& Value)
 
 //=========================================================================================================================================
 
-void APortalProjectCharacter::Move(const FInputActionValue& Value)
-{
-	// input is a Vector2D
-	FVector2D MovementVector = Value.Get<FVector2D>();
+// void APortalProjectCharacter::Move(const FInputActionValue& Value)
+// {
+// 	// input is a Vector2D
+// 	FVector2D MovementVector = Value.Get<FVector2D>();
+//
+// 	if (Controller != nullptr)
+// 	{
+// 		// add movement 
+// 		AddMovementInput(GetActorForwardVector(), MovementVector.Y);
+// 		AddMovementInput(GetActorRightVector(), MovementVector.X);
+// 	}
+// }
 
-	if (Controller != nullptr)
-	{
-		// add movement 
-		AddMovementInput(GetActorForwardVector(), MovementVector.Y);
-		AddMovementInput(GetActorRightVector(), MovementVector.X);
-	}
-}
-
-void APortalProjectCharacter::Look(const FInputActionValue& Value)
-{
-	// input is a Vector2D
-	FVector2D LookAxisVector = Value.Get<FVector2D>();
-
-	if (Controller != nullptr)
-	{
-		// add yaw and pitch input to controller
-		AddControllerYawInput(LookAxisVector.X);
-		AddControllerPitchInput(LookAxisVector.Y);
-	}
-}
+// void APortalProjectCharacter::Look(const FInputActionValue& Value)
+// {
+// 	// input is a Vector2D
+// 	FVector2D LookAxisVector = Value.Get<FVector2D>();
+//
+// 	if (Controller != nullptr)
+// 	{
+// 		// add yaw and pitch input to controller
+// 		AddControllerYawInput(LookAxisVector.X);
+// 		AddControllerPitchInput(LookAxisVector.Y);
+// 	}
+// }
 
 void APortalProjectCharacter::SetHasRifle(bool bNewHasRifle)
 {

@@ -8,6 +8,8 @@
 #include "Logging/LogMacros.h"
 #include "PortalProjectCharacter.generated.h"
 
+class USpringArmComponent;
+class UPlayerMove;
 class APortal_CloseBullet;
 class APortal_Bullet;
 class APortal_Tablet;
@@ -30,21 +32,21 @@ class APortalProjectCharacter : public ACharacter
 	UPROPERTY(VisibleDefaultsOnly, Category=Mesh)
 	USkeletalMeshComponent* Mesh1P;
 
-	/** First person camera */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	UCameraComponent* FirstPersonCameraComponent;
+	// /** First person camera */
+	// UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	// UCameraComponent* FirstPersonCameraComponent;
 
 	/** MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputMappingContext* DefaultMappingContext;
 
 	/** Jump Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-	UInputAction* JumpAction;
-
-	/** Move Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-	UInputAction* MoveAction;
+	// UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	// UInputAction* JumpAction;
+	//
+	// /** Move Input Action */
+	// UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	// UInputAction* MoveAction;
 
 	
 
@@ -57,9 +59,9 @@ protected:
 
 public:
 		
-	/** Look Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputAction* LookAction;
+	// /** Look Input Action */
+	// UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	// class UInputAction* LookAction;
 
 	/** Bool for AnimBP to switch to another animation set */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
@@ -73,12 +75,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = Weapon)
 	bool GetHasRifle();
 
-protected:
-	/** Called for movement input */
-	void Move(const FInputActionValue& Value);
-
-	/** Called for looking input */
-	void Look(const FInputActionValue& Value);
+// protected:
+// 	
+// 	void Move(const FInputActionValue& Value);
+//
+// 	
+// 	void Look(const FInputActionValue& Value);
 
 protected:
 	
@@ -86,13 +88,18 @@ protected:
 	
 
 public:
-	/** Returns Mesh1P subobject **/
+	
 	USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }
-	/** Returns FirstPersonCameraComponent subobject **/
+	
 	UPROPERTY(EditAnywhere,Category="Portal_Settings")
 	UCameraComponent* CameraComp;
+
+	UPROPERTY(EditAnywhere,Category="Portal_Settings")
+	USpringArmComponent* ArmComp;
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Portal_Settings")
+	UPlayerMove* MoveComp;
 	
-	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
 
 
 //=================================================================================================================================	
