@@ -6,6 +6,7 @@
 #include "Chaos/Deformable/ChaosDeformableCollisionsProxy.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "Object/Portal_Tablet.h"
 
 
 APortal_Bullet::APortal_Bullet()
@@ -29,7 +30,7 @@ void APortal_Bullet::BeginPlay()
  
 	switch (Type)
 	{
-	case EPortalType::Player1Blue:
+	case EPortalType::Player1Blue: 
 		break;
 	case EPortalType::Player1Purple:
 		break;
@@ -37,7 +38,6 @@ void APortal_Bullet::BeginPlay()
 		break;
 	case EPortalType::Player2Red:
 		break;
-	
 	}
 }
 
@@ -48,6 +48,17 @@ void APortal_Bullet::Tick(float DeltaTime)
 
 
 }
+
+void APortal_Bullet::SpawnBluePortal()
+{
+	
+}
+
+void APortal_Bullet::SpawnPurplePortal()
+{
+	
+}
+
 
 
 

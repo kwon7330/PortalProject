@@ -41,6 +41,9 @@ public:
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="BulletTypeSettings")
 	EPortalType Type;
 
-	
+
+public:
+	void SpawnBluePortal();
+	void SpawnPurplePortal();
 	
 };

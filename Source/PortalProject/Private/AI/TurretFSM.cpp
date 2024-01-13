@@ -51,8 +51,9 @@ void UTurretFSM::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompo
 void UTurretFSM::TickIdle()
 {
 	UE_LOG(LogTemp,Warning,TEXT("Idle@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"))
-	Target = Cast<APortalProjectCharacter>(GetWorld()->GetFirstPlayerController());
-	if(Target != nullptr)
+	Target = Cast<APortalProjectCharacter>(GetWorld()->GetFirstPlayerController()->GetPawn());
+	float Distance = FVector::Dist(Self->GetActorLocation(),Target->GetActorLocation());
+	if(Target != nullptr && Distance < AttackDist)
 	{
 		SetState(ETurretState::Attack);
 	}
@@ -67,7 +68,9 @@ void UTurretFSM::TickAttack()
 	if(CurrentTime>AttackTime)
 	{
 		Attack();
+		SetState(ETurretState::Idle);
 	}
+	
 }
 
 void UTurretFSM::TickDie()
@@ -77,22 +80,22 @@ void UTurretFSM::TickDie()
 
 void UTurretFSM::Attack()
 {
+	UE_LOG(LogTemp,Warning,TEXT("Attacking@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"))
 	FHitResult HitInfo;
 	FVector StartPoint = Self->AttackPoint->GetComponentLocation();
-	FVector EndPoint = StartPoint * 10000;
+	FVector EndPoint = StartPoint + Self->GetActorForwardVector() *  300;
 	FCollisionQueryParams Params;
 	Params.AddIgnoredActor(Self);
 	bool bHit = GetWorld()->LineTraceSingleByChannel(HitInfo,StartPoint,EndPoint,ECC_Visibility,Params);
+	DrawDebugLine(GetWorld(),StartPoint,EndPoint,FColor::Red,false,2,0,3);
 	if(bHit == true)
 	{
-		DrawDebugLine(GetWorld(),StartPoint,EndPoint,FColor::Red,false,1);
-		
 		// if(Target -> IsA<APortalProjectCharacter>())
 		// {
 		// 	// 체력을 감소시키고싶다.	
 		// }
-		
 	}
+	
 }
 
 void UTurretFSM::SetState(ETurretState Next)

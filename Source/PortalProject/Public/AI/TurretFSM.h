@@ -6,6 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "TurretFSM.generated.h"
 
+class APortalProjectCharacter;
 class AAIController;
 class APortal_Turret;
 
@@ -37,7 +38,7 @@ public:
 	UPROPERTY()
 	APortal_Turret* Self;
 	UPROPERTY()
-	ACharacter* Target;
+	APortalProjectCharacter* Target;
 	UPROPERTY()
 	AAIController* AI;
 	
@@ -47,6 +48,7 @@ public:
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="TurretSettings")
 	float AttackTime = 3.0f;
 
+	float AttackDist = 300;
 	float CurrentTime = 0;
 	
 private:
