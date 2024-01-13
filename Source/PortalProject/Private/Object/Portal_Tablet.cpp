@@ -55,25 +55,25 @@ void APortal_Tablet::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor*
 			
 			UE_LOG(LogTemp,Warning,TEXT("BluePortal"));
 			
-			//SameColorPortal.Add(NewBluePortal);
+			
 		}
 		else if(Portal->Type == EPortalType::Player1Purple)
 		{
-			//APortal_Bullet* NewPurplePortal;
+			
 			UE_LOG(LogTemp,Warning,TEXT("PurplePortal"));
-			//SameColorPortal.Add(NewPurplePortal);
+			
 		}
 		else if(Portal->Type == EPortalType::Player2Orange)
 		{
-			//APortal_Bullet* NewOrangePortal;
+			
 			UE_LOG(LogTemp,Warning,TEXT("OrangePortal"));
-			//SameColorPortal.Add(NewOrangePortal);
+			
 		}
 		else if(Portal->Type == EPortalType::Player2Red)
 		{
-			//APortal_Bullet* NewRedPortal;
+			
 			UE_LOG(LogTemp,Warning,TEXT("RedPortal"));
-			//SameColorPortal.Add(NewRedPortal);
+			
 
 		}
 	}

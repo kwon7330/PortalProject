@@ -75,6 +75,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = Weapon)
 	bool GetHasRifle();
 
+public:
+	virtual void Tick(float DeltaSeconds) override;
+
 // protected:
 // 	
 // 	void Move(const FInputActionValue& Value);
@@ -148,7 +151,6 @@ public:
 //=================================================================================================================================	
 	UPROPERTY(EditAnywhere)
 	APortal_Tablet* PortalTablet;
-
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<APortal_Bullet> BulletFactory;
 	UPROPERTY(EditAnywhere)
@@ -156,10 +158,28 @@ public:
 	
 	void LeftClickPortal(const FInputActionValue& Value);
 	void RightClickPortal(const FInputActionValue& Value);
-
-	// 큐브를 들고 있을 떄는 포탈을 쏠수 없도록 한다.
 	
+	
+//=================================================================================================================================	
+
+	void CheckObject();
+
+public:
+	UPROPERTY(EditAnywhere)
+	class APortal_SmallButton* SmallButton;
+
+
+//=================================================================================================================================	
 
 	
+	// E키를 사용했을 때 버튼과 큐브를 누를 수 있도록 구분
+
+	bool isPushButton = false;
+	bool isTakeCube = false;
+	
+//=================================================================================================================================	
+
+	// 버튼을 누르는 함수
+	void PushButton();
 };
 

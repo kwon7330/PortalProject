@@ -18,6 +18,7 @@
 #include "Object/Portal_Bullet.h"
 #include "Object/Portal_CloseBullet.h"
 #include "Object/Portal_Cube.h"
+#include "Object/Portal_SmallButton.h"
 #include "Object/Portal_Tablet.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
@@ -123,6 +124,35 @@ void APortalProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 	}
 }
 //=========================================================================================================================================
+
+
+
+void APortalProjectCharacter::Pickup(const FInputActionValue& Value)
+{
+	// E 키를 눌렀을 때 
+	if(isTakeCube == true && isPushButton == false)
+	{
+		// 큐브를 들고있다면
+		if(bHasCube == true)
+		{
+			// 큐브를 놓고
+			ReleaseCube();
+		}
+		// 큐브를 들고있지않다면 	
+		else
+		{
+			// 큐브를 든다.
+			PickupCube();
+		}
+	}
+	else if(isTakeCube == false && isPushButton == true)
+	{
+		PushButton();
+	}
+}
+
+
+
 void APortalProjectCharacter::AttachCube(AActor* Cube)
 {
 	UE_LOG(LogTemp,Warning,TEXT("Attach Cube!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"));
@@ -138,20 +168,7 @@ void APortalProjectCharacter::DetachCube(AActor* Cube)
 	MeshComp->SetSimulatePhysics(true);
 	MeshComp->DetachFromComponent(FDetachmentTransformRules::KeepRelativeTransform);
 }
-void APortalProjectCharacter::Pickup(const FInputActionValue& Value)
-{
-	UE_LOG(LogTemp,Warning,TEXT("PicUP Cube!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"));
 
-	// 오브젝트를 들고 있지 않다면, 일정 범위 안에 있는 큐브를 잡는다.
-	if(bHasCube == true)
-	{
-		ReleaseCube();
-	}
-	else
-	{
-		PickupCube();
-	}
-}
 
 void APortalProjectCharacter::PickupCube()
 {
@@ -166,12 +183,12 @@ void APortalProjectCharacter::PickupCube()
 		{
 			continue;
 		}
-		float Distance = FVector::Dist(PortalGun->GetComponentLocation(),TempCube->GetActorLocation());
-		if(Distance>PickCube)
+		//float Distance = FVector::Dist(PortalGun->GetComponentLocation(),TempCube->GetActorLocation());
+		if(isTakeCube == false)
 		{
 			continue;
 		}
-		//UE_LOG(LogTemp,Warning,TEXT("22222222222222222222222222222222"));
+		UE_LOG(LogTemp,Warning,TEXT("TakeCube!!!!!!!!!!!!!!!!!!!!!!!!!"));
 		bHasCube = true;
 		OwnedCube = TempCube;
 		OwnedCube->SetOwner(this);
@@ -181,10 +198,9 @@ void APortalProjectCharacter::PickupCube()
 	}
 }
 
-void APortalProjectCharacter::ReleaseCube()//const FInputActionValue& Value)
+void APortalProjectCharacter::ReleaseCube()
 {
 	UE_LOG(LogTemp,Warning,TEXT("Release~!!!!!!"))
-	// -> 키를 한번 더 누르면 때진다.
 	if(bHasCube == false)
 	{
 		return;
@@ -195,6 +211,7 @@ void APortalProjectCharacter::ReleaseCube()//const FInputActionValue& Value)
 		bHasCube = false;
 		OwnedCube->SetOwner(nullptr);
 		OwnedCube = nullptr;
+		
 		
 	}
 	
@@ -207,6 +224,7 @@ void APortalProjectCharacter::LeftClickPortal(const FInputActionValue& Value)
 {
 	
 	// 만약 컴퍼넌트의 주인이 플레이어 1 이라면 파란 색 포탈을 생성하고, 주인이 플레이어 2라면 주황색 포탈을 생성한다.
+	// 큐브를 들고있으면 총을 쏘지 못한다.
 	if(bHasCube == false)
 	{
 		UE_LOG(LogTemp,Warning,TEXT("LeftClickShoot"));
@@ -220,7 +238,7 @@ void APortalProjectCharacter::LeftClickPortal(const FInputActionValue& Value)
 void APortalProjectCharacter::RightClickPortal(const FInputActionValue& Value)
 {
 	// 만약 컴퍼넌트의 주인이 플레이어 1 이라면 보라 색 포탈을 생성하고, 주인이 플레이어 2라면 붉은색 포탈을 생성한다.
-	
+	// 큐브를 들고있으면 총을 쏘지 못한다.
 	if(bHasCube == false)
 	{
 		UE_LOG(LogTemp,Warning,TEXT("RightClickShoot"));
@@ -232,9 +250,64 @@ void APortalProjectCharacter::RightClickPortal(const FInputActionValue& Value)
 	
 	
 }
-
 //=================================================================================================================================	
 
+
+// 라인트레이스를 사용하여 오브젝트 구분하는 함수 구현
+void APortalProjectCharacter::CheckObject()
+{
+	// 플레이어 컨트롤러를 설정
+	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this, 0);
+	if(PlayerController)
+	{
+		FHitResult HitInfo;
+		FVector CameraLocation;
+		FRotator CameraRotation;
+		
+		PlayerController->GetPlayerViewPoint(CameraLocation,CameraRotation);
+		//FVector StartPoint = CameraComp->GetComponentLocation();
+		//FVector EndPoint = StartPoint + GetActorForwardVector() * 100.f;
+		// 카메라의 위치를 시작지점
+		FVector StartPoint = CameraLocation;
+		// 카메라의 시작지점에서 카메라의 회전 백터에 힘 150을 더하여 끝지점을 정한다.
+		FVector EndPoint = StartPoint + CameraRotation.Vector() * 150;
+		FCollisionQueryParams Params;
+		// 자신은 콜리전 무시
+		Params.AddIgnoredActor(this);
+		bool bHit = GetWorld()->LineTraceSingleByChannel(HitInfo,StartPoint,EndPoint,ECC_Visibility,Params);
+		DrawDebugLine(GetWorld(), StartPoint, HitInfo.Location, FColor::Green, false, 2.0f, 0, 1.0f);
+		if(bHit)
+		{
+			// 충돌한 물체를 판단해서
+			AActor* HitActor = HitInfo.GetActor();
+			if(HitActor)
+			{
+				// 충돌한 물체가 버튼이면
+				if(HitActor->IsA<APortal_SmallButton>())
+				{
+					// 버튼을 누를 수 있는것을 true
+					isPushButton = true;
+				}
+				// 충돌한 물체가 큐브라면
+				else if(HitActor->IsA<APortal_Cube>())
+				{
+					// 큐브를 집는것을 true
+					isTakeCube =true;
+				}
+			}
+		}
+		else
+		{
+			isPushButton = false;
+			isTakeCube = false;
+		}
+	}	
+}
+
+void APortalProjectCharacter::PushButton()
+{
+	SmallButton->PushedButton = true;
+}
 
 
 //=========================================================================================================================================
@@ -273,6 +346,12 @@ void APortalProjectCharacter::SetHasRifle(bool bNewHasRifle)
 bool APortalProjectCharacter::GetHasRifle()
 {
 	return bHasRifle;
+}
+
+void APortalProjectCharacter::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+	CheckObject();
 }
 
 //=================================================================================================================================	

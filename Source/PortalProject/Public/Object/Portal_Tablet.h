@@ -50,5 +50,7 @@ public:
 
 	UPROPERTY()
 	APortal_Bullet* Bullet;
+
+
 	
 };

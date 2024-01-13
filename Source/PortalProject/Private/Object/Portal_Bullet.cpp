@@ -26,7 +26,7 @@ APortal_Bullet::APortal_Bullet()
 void APortal_Bullet::BeginPlay()
 {
 	Super::BeginPlay();
-
+ 
 	switch (Type)
 	{
 	case EPortalType::Player1Blue:

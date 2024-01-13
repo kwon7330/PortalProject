@@ -3,25 +3,37 @@
 
 #include "Object/Portal_SmallButton.h"
 
-// Sets default values
+#include "Components/CapsuleComponent.h"
+#include "PortalProject/PortalProjectCharacter.h"
+
+
 APortal_SmallButton::APortal_SmallButton()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+ 	
+	PrimaryActorTick.bCanEverTick = false;
+	CapsuleComp = CreateDefaultSubobject<UCapsuleComponent>(TEXT("CapsuleComp"));
+	SetRootComponent(CapsuleComp);
+	CapsuleComp -> SetCapsuleHalfHeight(70.f);
+	CapsuleComp -> SetCapsuleRadius(35.f);
 
 }
 
-// Called when the game starts or when spawned
+
 void APortal_SmallButton::BeginPlay()
 {
 	Super::BeginPlay();
 	
 }
 
-// Called every frame
+
 void APortal_SmallButton::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	
+
 }
+
+
+
 
