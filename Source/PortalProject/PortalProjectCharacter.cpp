@@ -110,7 +110,7 @@ void APortalProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 		
 		// 큐브 Pickup
 		EnhancedInputComponent->BindAction(PickUpAction, ETriggerEvent::Started, this, &APortalProjectCharacter::Pickup);
-		EnhancedInputComponent->BindAction(PickUpAction, ETriggerEvent::Completed, this, &APortalProjectCharacter::Released);
+		//EnhancedInputComponent->BindAction(PickUpAction, ETriggerEvent::Completed, this, &APortalProjectCharacter::Released);
 		// 여는 포탈 날리기
 		EnhancedInputComponent->BindAction(LeftClickShootAction, ETriggerEvent::Started, this, &APortalProjectCharacter::LeftClickPortal);
 		// 닫는 포탈 날리기
@@ -125,8 +125,7 @@ void APortalProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 //=========================================================================================================================================
 void APortalProjectCharacter::AttachCube(AActor* Cube)
 {
-	UE_LOG(LogTemp,Warning,TEXT("333333333333333333333333333333"));
-
+	UE_LOG(LogTemp,Warning,TEXT("Attach Cube!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"));
 	auto MeshComp = Cube->GetComponentByClass<UStaticMeshComponent>();
 	MeshComp->SetSimulatePhysics(false);
 	MeshComp->AttachToComponent(AttachComp,FAttachmentTransformRules::SnapToTargetNotIncludingScale);
@@ -134,45 +133,28 @@ void APortalProjectCharacter::AttachCube(AActor* Cube)
 
 void APortalProjectCharacter::DetachCube(AActor* Cube)
 {
+	UE_LOG(LogTemp,Warning,TEXT("Detach Cube!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"));
 	auto MeshComp = Cube->GetComponentByClass<UStaticMeshComponent>();
 	MeshComp->SetSimulatePhysics(true);
 	MeshComp->DetachFromComponent(FDetachmentTransformRules::KeepRelativeTransform);
 }
-//=================================================================================================================================	
-
-void APortalProjectCharacter::LeftClickPortal(const FInputActionValue& Value)
-{
-	UE_LOG(LogTemp,Warning,TEXT("LeftClickShoot"));
-	// 만약 컴퍼넌트의 주인이 플레이어 1 이라면 파란 색 포탈을 생성하고, 주인이 플레이어 2라면 주황색 포탈을 생성한다.
-	FTransform FirePoint = PortalGun->GetSocketTransform(FName("FirePoint"));
-	APortal_Bullet* Bullet = GetWorld()->SpawnActorDeferred<APortal_Bullet>(BulletFactory,FirePoint);
-	Bullet->Type = EPortalType::Player1Blue;
-	UGameplayStatics::FinishSpawningActor(Bullet, FirePoint);
-	
-	
-}
-
-void APortalProjectCharacter::RightClickPortal(const FInputActionValue& Value)
-{
-	// 만약 컴퍼넌트의 주인이 플레이어 1 이라면 보라 색 포탈을 생성하고, 주인이 플레이어 2라면 붉은색 포탈을 생성한다.
-	UE_LOG(LogTemp,Warning,TEXT("RightClickShoot"));
-	FTransform FirePoint = PortalGun->GetSocketTransform(FName("FirePoint"));
-	APortal_Bullet* Bullet = GetWorld()->SpawnActorDeferred<APortal_Bullet>(BulletFactory,FirePoint);
-	Bullet->Type = EPortalType::Player1Purple;
-	UGameplayStatics::FinishSpawningActor(Bullet, FirePoint);
-}
-
-//=================================================================================================================================	
-
 void APortalProjectCharacter::Pickup(const FInputActionValue& Value)
 {
-	//UE_LOG(LogTemp,Warning,TEXT("11111111111111111111111111111"));
+	UE_LOG(LogTemp,Warning,TEXT("PicUP Cube!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"));
 
 	// 오브젝트를 들고 있지 않다면, 일정 범위 안에 있는 큐브를 잡는다.
 	if(bHasCube == true)
 	{
-		return;
+		ReleaseCube();
 	}
+	else
+	{
+		PickupCube();
+	}
+}
+
+void APortalProjectCharacter::PickupCube()
+{
 	// 필요 속성 : 큐브 여부, 큐브와의 거리
 	TArray<AActor*> AllActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(),AActor::StaticClass(),AllActors);
@@ -182,7 +164,7 @@ void APortalProjectCharacter::Pickup(const FInputActionValue& Value)
 		//UE_LOG(LogTemp,Warning,TEXT("@@@@@@@@@@@@@@@@@@@@@@@@@@@@"));
 		if(TempCube->GetName().Contains("BP_PortalCube") == false)
 		{
-				continue;
+			continue;
 		}
 		float Distance = FVector::Dist(PortalGun->GetComponentLocation(),TempCube->GetActorLocation());
 		if(Distance>PickCube)
@@ -196,28 +178,13 @@ void APortalProjectCharacter::Pickup(const FInputActionValue& Value)
 
 		AttachCube(OwnedCube);
 		break;
-
-		// for(auto TempCube : AllActors)
-		// {
-		// 	APortal_Cube* Cube = Cast<APortal_Cube>(TempCube);
-		// 	if(Cube)
-		// 	{
-		// 		float Distance = FVector::Dist(GetActorLocation(),TempCube->GetActorLocation());
-		// 		if(Distance>PickCube)
-		// 		{
-		// 			bHasCube = true;
-		// 			OwnedCube = TempCube;
-		// 			OwnedCube->SetOwner(this);
-		// 			
-		// 		}
-		// 	}
-		// }
 	}
 }
 
-void APortalProjectCharacter::Released(const FInputActionValue& Value)
+void APortalProjectCharacter::ReleaseCube()//const FInputActionValue& Value)
 {
-	// 오브젝트를 들면 키를 누루고 있는 동안 계속 들고 있고 키를 때면 내렿놓게 된다.
+	UE_LOG(LogTemp,Warning,TEXT("Release~!!!!!!"))
+	// -> 키를 한번 더 누르면 때진다.
 	if(bHasCube == false)
 	{
 		return;
@@ -232,6 +199,43 @@ void APortalProjectCharacter::Released(const FInputActionValue& Value)
 	}
 	
 }
+
+
+//=================================================================================================================================	
+
+void APortalProjectCharacter::LeftClickPortal(const FInputActionValue& Value)
+{
+	
+	// 만약 컴퍼넌트의 주인이 플레이어 1 이라면 파란 색 포탈을 생성하고, 주인이 플레이어 2라면 주황색 포탈을 생성한다.
+	if(bHasCube == false)
+	{
+		UE_LOG(LogTemp,Warning,TEXT("LeftClickShoot"));
+		FTransform FirePoint = PortalGun->GetSocketTransform(FName("FirePoint"));
+		APortal_Bullet* Bullet = GetWorld()->SpawnActorDeferred<APortal_Bullet>(BulletFactory,FirePoint);
+		Bullet->Type = EPortalType::Player1Blue;
+		UGameplayStatics::FinishSpawningActor(Bullet, FirePoint);
+	}
+}
+
+void APortalProjectCharacter::RightClickPortal(const FInputActionValue& Value)
+{
+	// 만약 컴퍼넌트의 주인이 플레이어 1 이라면 보라 색 포탈을 생성하고, 주인이 플레이어 2라면 붉은색 포탈을 생성한다.
+	
+	if(bHasCube == false)
+	{
+		UE_LOG(LogTemp,Warning,TEXT("RightClickShoot"));
+		FTransform FirePoint = PortalGun->GetSocketTransform(FName("FirePoint"));
+		APortal_Bullet* Bullet = GetWorld()->SpawnActorDeferred<APortal_Bullet>(BulletFactory,FirePoint);
+		Bullet->Type = EPortalType::Player1Purple;
+		UGameplayStatics::FinishSpawningActor(Bullet, FirePoint);
+	}
+	
+	
+}
+
+//=================================================================================================================================	
+
+
 
 //=========================================================================================================================================
 

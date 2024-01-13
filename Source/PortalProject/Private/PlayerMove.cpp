@@ -70,7 +70,7 @@ void UPlayerMove::Move(const FInputActionValue& Value)
 		// add movement 
 		Self->AddMovementInput(Self->GetActorForwardVector(), MovementVector.Y);
 		Self->AddMovementInput(Self->GetActorRightVector(), MovementVector.X);
-		UE_LOG(LogTemp,Warning,TEXT("MoveMoveMove!!!!!!!!!!!!!!!!!!"))
+		//UE_LOG(LogTemp,Warning,TEXT("MoveMoveMove!!!!!!!!!!!!!!!!!!"))
 	}
 }
 void UPlayerMove::Look(const FInputActionValue& Value)

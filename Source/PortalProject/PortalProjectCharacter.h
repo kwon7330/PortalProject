@@ -108,6 +108,8 @@ public:
 	UPROPERTY(EditAnywhere,Category="Portal_Input")
 	UInputAction* PickUpAction;
 	UPROPERTY(EditAnywhere,Category="Portal_Input")
+	UInputAction* ReleaseAction;
+	UPROPERTY(EditAnywhere,Category="Portal_Input")
 	UInputAction* LeftClickShootAction;
 	UPROPERTY(EditAnywhere,Category="Portal_Input")
 	UInputAction* RightClickShootAction;
@@ -136,10 +138,12 @@ public:
 	void Pickup(const FInputActionValue& Value);
 	// 큐브를 컴포넌트로 붙이는 함수.
 	void AttachCube(AActor* Cube);
-	// 큐브를 놓기를 처리할 함수.
-	void Released(const FInputActionValue& Value);
 	// 큐브를 컴포넌트로 부터 때는 함수.
 	void DetachCube(AActor* Cube);
+	
+
+	void PickupCube();
+	void ReleaseCube();
 	
 //=================================================================================================================================	
 	UPROPERTY(EditAnywhere)
@@ -153,7 +157,8 @@ public:
 	void LeftClickPortal(const FInputActionValue& Value);
 	void RightClickPortal(const FInputActionValue& Value);
 
-	// 포탈이 쏴지면 
+	// 큐브를 들고 있을 떄는 포탈을 쏠수 없도록 한다.
+	
 
 	
 };

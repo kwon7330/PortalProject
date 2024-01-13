@@ -11,3 +11,4 @@ enum class EPortalType : uint8
 	Player2Orange,
 	Player2Red,
 };
+

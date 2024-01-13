@@ -47,21 +47,18 @@ void APortal_Tablet::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor*
 	// 포탈 총알이 부딪히면 총알이 포탈을 여는 총알이면 여는 포탈을 생성한다.
 	// 포탈이 생성 되었을 때 하나라도 존재하면 기존에 있던 포탈을 없에고 다시 포탈을 생성한다.
 	auto Portal = Cast<APortal_Bullet>(OtherActor);
-	TArray<APortal_Bullet*>SameColorPortal;
+	
 	if(Portal!= nullptr)
 	{
-		APortal_Bullet* NewPortal = nullptr;
 		if(Portal->Type == EPortalType::Player1Blue)
 		{
-			 auto BluePortal = Cast<APortal_Bullet>(Portal);
+			
 			UE_LOG(LogTemp,Warning,TEXT("BluePortal"));
-			NewPortal = BluePortal;
+			
 			//SameColorPortal.Add(NewBluePortal);
 		}
 		else if(Portal->Type == EPortalType::Player1Purple)
 		{
-			auto PurplePortal = Cast<APortal_Bullet>(Portal);
-			NewPortal = PurplePortal;
 			//APortal_Bullet* NewPurplePortal;
 			UE_LOG(LogTemp,Warning,TEXT("PurplePortal"));
 			//SameColorPortal.Add(NewPurplePortal);
@@ -78,18 +75,6 @@ void APortal_Tablet::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor*
 			UE_LOG(LogTemp,Warning,TEXT("RedPortal"));
 			//SameColorPortal.Add(NewRedPortal);
 
-		}
-		if(NewPortal != nullptr)
-		{
-			SameColorPortal.Add(NewPortal);
-		}
-		for(APortal_Bullet* OldPortal : SameColorPortal)
-		{
-			if(NewPortal->Type == OldPortal->Type)
-			{
-				UE_LOG(LogTemp,Warning,TEXT("RemovePortal"));
-				SameColorPortal.Remove(OldPortal);
-			}
 		}
 	}
 }
