@@ -57,6 +57,9 @@ protected:
 	void Look(const FInputActionValue& Value);
 	void Jump();
 	void StopJump();
+
+
+public:
 	
 	
 };

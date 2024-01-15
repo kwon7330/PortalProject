@@ -58,5 +58,4 @@ public:
 
 	
 	
-	void SpawnPortal(APortal_PortalDemo* PortalDemo);
 };

@@ -59,12 +59,7 @@ protected:
 	virtual void BeginPlay();
 
 public:
-		
-	// /** Look Input Action */
-	// UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	// class UInputAction* LookAction;
-
-	/** Bool for AnimBP to switch to another animation set */
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
 	bool bHasRifle;
 
@@ -79,12 +74,7 @@ public:
 public:
 	virtual void Tick(float DeltaSeconds) override;
 
-// protected:
-// 	
-// 	void Move(const FInputActionValue& Value);
-//
-// 	
-// 	void Look(const FInputActionValue& Value);
+
 
 protected:
 	
@@ -129,6 +119,7 @@ public:
 
 public:
 	// 큐브를 들고 있는가?
+	UPROPERTY(Replicated)
 	bool bHasCube = false;
 	// 잡을 수 있는 범위
 	UPROPERTY(EditAnywhere,Category="Cube")
@@ -175,7 +166,9 @@ public:
 	
 	// E키를 사용했을 때 버튼과 큐브를 누를 수 있도록 구분
 
+	UPROPERTY(Replicated)
 	bool isPushButton = false;
+	UPROPERTY(Replicated)
 	bool isTakeCube = false;
 	
 //=================================================================================================================================	
@@ -186,9 +179,42 @@ public:
 
 //=================================================================================================================================	
 
-
-	// 포탈 제거
 	void RemovePortal(EPortalType OldPortalType);
+	
+
+//=================================================================================================================================	
+
+	// 네트워크
+	UFUNCTION(Server,Reliable)
+	void ServerRPC_ObjectCheck();
+	UFUNCTION(NetMulticast,Unreliable)
+	void MultiRPC_ObjectCheck(APlayerCameraManager* PCM2);
+	
+	
+	
+	UFUNCTION(Server,Reliable)
+	void ServerRPC_LeftClick();
+	UFUNCTION(NetMulticast,Unreliable)
+	void MultiRPC_LeftClick();
+
+	
+	UFUNCTION(Server,Reliable)
+	void ServerRPC_RightClick();
+	UFUNCTION(NetMulticast,Unreliable)
+	void MultiRPC_RightClick();
+
+
+	UFUNCTION(Server,Reliable)
+	void ServerRPC_PickupCube();
+	UFUNCTION(NetMulticast,Unreliable)
+	void MultiRPC_PickupCube(AActor* Cube);
+	
+	UFUNCTION(Server,Reliable)
+	void ServerPRC_ReleaseCube();
+	UFUNCTION(NetMulticast,Unreliable)
+	void MultiRPC_ReleaseCube(AActor* Cube);
+	
+	
 	
 };
 

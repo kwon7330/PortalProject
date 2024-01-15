@@ -13,8 +13,6 @@ UPlayerMove::UPlayerMove()
 {
 	
 	PrimaryComponentTick.bCanEverTick = true;
-
-	
 }
 
 
@@ -31,8 +29,7 @@ void UPlayerMove::BeginPlay()
 			Subsystem->AddMappingContext(IMC, 0);
 		}
 	}
-
-
+	
 	
 }
 
