@@ -40,14 +40,12 @@ public:
 //=================================================================================================================================	
 
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="WallSettings")
-	TSubclassOf<class APortal_Cube>SpawnFactory;
+	TSubclassOf<class APortal_PortalDemo>SpawnFactory;
 
 	// 포탈 총알이 부딪히면 포탈을 고정된 공간에 생성하고싶다.
 	UFUNCTION()
 	void OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
-	void SpawnPortal();
-
+	
 	UPROPERTY()
 	APortal_Bullet* Bullet;
 

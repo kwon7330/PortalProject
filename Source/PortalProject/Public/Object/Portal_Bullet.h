@@ -7,6 +7,9 @@
 #include "../PortalProject.h"
 #include "Portal_Bullet.generated.h"
 
+class APortal_Tablet;
+class APortal_PortalManager;
+class APortal_PortalDemo;
 class UProjectileMovementComponent;
 class USphereComponent;
 
@@ -37,13 +40,23 @@ public:
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Bullet")
 	UProjectileMovementComponent* ProjectileMovementComp;
 
+	APortal_PortalManager* PortalManager;
+	
 public:
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="BulletTypeSettings")
 	EPortalType Type;
 
 
-public:
-	void SpawnBluePortal();
-	void SpawnPurplePortal();
+	UPROPERTY(EditAnywhere,Category="ColorSettings")
+	APortal_PortalDemo* PortalColor;
+
 	
+
+
+	UFUNCTION()
+	void OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	
+	
+	void SpawnPortal(APortal_PortalDemo* PortalDemo);
 };

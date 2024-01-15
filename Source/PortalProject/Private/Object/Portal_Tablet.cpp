@@ -9,6 +9,7 @@
 #include "Object/Portal_Bullet.h"
 #include "Object/Portal_CloseBullet.h"
 #include "Object/Portal_Cube.h"
+#include "Object/Portal_PortalDemo.h"
 
 
 APortal_Tablet::APortal_Tablet()
@@ -62,12 +63,14 @@ void APortal_Tablet::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor*
 			
 			UE_LOG(LogTemp,Warning,TEXT("PurplePortal"));
 			
+
 		}
 		else if(Portal->Type == EPortalType::Player2Orange)
 		{
 			
 			UE_LOG(LogTemp,Warning,TEXT("OrangePortal"));
 			
+
 		}
 		else if(Portal->Type == EPortalType::Player2Red)
 		{
@@ -75,14 +78,10 @@ void APortal_Tablet::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor*
 			UE_LOG(LogTemp,Warning,TEXT("RedPortal"));
 			
 
+
 		}
 	}
 }
 
-void APortal_Tablet::SpawnPortal()
-{
-	FTransform SpawnPortalPoint = SpawnPoint->GetComponentTransform();
-	GetWorld()->SpawnActor<APortal_Cube>(SpawnFactory,SpawnPortalPoint);
-}
 
 

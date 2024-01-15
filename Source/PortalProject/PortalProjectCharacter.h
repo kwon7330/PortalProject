@@ -8,6 +8,7 @@
 #include "Logging/LogMacros.h"
 #include "PortalProjectCharacter.generated.h"
 
+enum class EPortalType : uint8;
 class USpringArmComponent;
 class UPlayerMove;
 class APortal_CloseBullet;
@@ -181,5 +182,13 @@ public:
 
 	// 버튼을 누르는 함수
 	void PushButton();
+
+
+//=================================================================================================================================	
+
+
+	// 포탈 제거
+	void RemovePortal(EPortalType OldPortalType);
+	
 };
 

@@ -1,6 +1,8 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "PortalProjectCharacter.h"
+
+#include "EngineUtils.h"
 #include "PortalProjectProjectile.h"
 #include "Animation/AnimInstance.h"
 #include "Camera/CameraComponent.h"
@@ -232,6 +234,7 @@ void APortalProjectCharacter::LeftClickPortal(const FInputActionValue& Value)
 		APortal_Bullet* Bullet = GetWorld()->SpawnActorDeferred<APortal_Bullet>(BulletFactory,FirePoint);
 		Bullet->Type = EPortalType::Player1Blue;
 		UGameplayStatics::FinishSpawningActor(Bullet, FirePoint);
+		//RemovePortal(EPortalType::Player1Blue);
 	}
 }
 
@@ -246,6 +249,7 @@ void APortalProjectCharacter::RightClickPortal(const FInputActionValue& Value)
 		APortal_Bullet* Bullet = GetWorld()->SpawnActorDeferred<APortal_Bullet>(BulletFactory,FirePoint);
 		Bullet->Type = EPortalType::Player1Purple;
 		UGameplayStatics::FinishSpawningActor(Bullet, FirePoint);
+		//RemovePortal(EPortalType::Player1Purple);
 	}
 	
 	
@@ -263,14 +267,17 @@ void APortalProjectCharacter::CheckObject()
 		FHitResult HitInfo;
 		FVector CameraLocation;
 		FRotator CameraRotation;
+
+		auto PCM = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
 		
-		PlayerController->GetPlayerViewPoint(CameraLocation,CameraRotation);
+		
+		//PlayerController->GetPlayerViewPoint(CameraLocation,CameraRotation);
 		//FVector StartPoint = CameraComp->GetComponentLocation();
 		//FVector EndPoint = StartPoint + GetActorForwardVector() * 100.f;
 		// 카메라의 위치를 시작지점
-		FVector StartPoint = CameraLocation;
+		FVector StartPoint = PCM->GetCameraLocation();
 		// 카메라의 시작지점에서 카메라의 회전 백터에 힘 150을 더하여 끝지점을 정한다.
-		FVector EndPoint = StartPoint + CameraRotation.Vector() * 150;
+		FVector EndPoint = StartPoint + PCM->GetCameraRotation().Vector() * 150;
 		FCollisionQueryParams Params;
 		// 자신은 콜리전 무시
 		Params.AddIgnoredActor(this);
@@ -303,12 +310,33 @@ void APortalProjectCharacter::CheckObject()
 		}
 	}	
 }
+//=================================================================================================================================	
 
 void APortalProjectCharacter::PushButton()
 {
 	SmallButton->PushedButton = true;
 }
+//=================================================================================================================================	
 
+
+
+void APortalProjectCharacter::RemovePortal(EPortalType OldPortalType)
+{
+	// 월드에 있는 ABullet 을 모두 찾아본다.
+	for(TActorIterator<APortal_Bullet> It(GetWorld()); It; ++It)
+	{
+		APortal_Bullet* Portal = *It;
+		// 만약 포탈 타입이 같은것이 존재하면
+		if(Portal->Type == OldPortalType)
+		{
+			// 포탈을 지운다.
+			Portal->Destroy();
+			//UE_LOG(LogTemp,Warning,TEXT("RemovePortal"));
+		}
+	}
+}
+
+//=================================================================================================================================	
 
 //=========================================================================================================================================
 

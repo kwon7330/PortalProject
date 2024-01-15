@@ -50,11 +50,16 @@ void UTurretFSM::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompo
 
 void UTurretFSM::TickIdle()
 {
-	UE_LOG(LogTemp,Warning,TEXT("Idle@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"))
+	// 기본 대기상태
+	// 플레이어를 바라보지않는다.
+	AI->ClearFocus(EAIFocusPriority::Gameplay);
+	//UE_LOG(LogTemp,Warning,TEXT("Idle@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"))
 	Target = Cast<APortalProjectCharacter>(GetWorld()->GetFirstPlayerController()->GetPawn());
 	float Distance = FVector::Dist(Self->GetActorLocation(),Target->GetActorLocation());
+	// 타겟을 찾아서 공격 가능거리보다 가까워지면
 	if(Target != nullptr && Distance < AttackDist)
 	{
+		// 공격 상태로 전이
 		SetState(ETurretState::Attack);
 	}
 	
@@ -62,11 +67,14 @@ void UTurretFSM::TickIdle()
 
 void UTurretFSM::TickAttack()
 {
-	UE_LOG(LogTemp,Warning,TEXT("Attack@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"))
+	//UE_LOG(LogTemp,Warning,TEXT("Attack@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"))
+	// 상대방을 바라보고
 	AI->SetFocus(Target,EAIFocusPriority::Gameplay);
 	CurrentTime += GetWorld()->GetDeltaSeconds();
+	// 현재 시간이 공격시간을 넘어서면
 	if(CurrentTime>AttackTime)
 	{
+		// 공격을 하고 대기상태로 돌아간다.
 		Attack();
 		SetState(ETurretState::Idle);
 	}
@@ -80,7 +88,7 @@ void UTurretFSM::TickDie()
 
 void UTurretFSM::Attack()
 {
-	UE_LOG(LogTemp,Warning,TEXT("Attacking@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"))
+	//UE_LOG(LogTemp,Warning,TEXT("Attacking@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"))
 	FHitResult HitInfo;
 	FVector StartPoint = Self->AttackPoint->GetComponentLocation();
 	FVector EndPoint = StartPoint + Self->GetActorForwardVector() *  300;
