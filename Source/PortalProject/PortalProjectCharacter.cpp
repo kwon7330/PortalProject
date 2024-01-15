@@ -229,7 +229,8 @@ void APortalProjectCharacter::CheckObject()
 
 void APortalProjectCharacter::PushButton()
 {
-	SmallButton->PushedButton = true;
+	UE_LOG(LogTemp,Warning,TEXT("PushButton"));
+	
 }
 //=================================================================================================================================	
 
@@ -329,8 +330,6 @@ void APortalProjectCharacter::ServerPRC_ReleaseCube_Implementation()
 		bHasCube = false;
 		OwnedCube->SetOwner(nullptr);
 		OwnedCube = nullptr;
-		
-		
 	}
 }
 
