@@ -12,6 +12,7 @@
 #include "Object/Portal_PortalManager.h"
 #include "Object/Portal_Tablet.h"
 #include "Components/ArrowComponent.h"
+#include "Kismet/KismetMaterialLibrary.h"
 
 
 APortal_Bullet::APortal_Bullet()
@@ -38,6 +39,13 @@ void APortal_Bullet::BeginPlay()
 	PortalManager = Cast<APortal_PortalManager>(UGameplayStatics::GetActorOfClass(GetWorld(), APortal_PortalManager::StaticClass()));
 
 	checkf(PortalManager, TEXT("맵에 Portal Manager가 없다"));
+
+
+	// 총알 색깔 변경
+	UMaterialInstanceDynamic* BulletMeshMat = UKismetMaterialLibrary::CreateDynamicMaterialInstance(GetWorld(), MeshComp->GetMaterial(0));
+	BulletMeshMat->SetVectorParameterValue(TEXT("PortalColor"), *PortalColorMap.Find(Type));
+	MeshComp->SetMaterial(0, BulletMeshMat);
+	
 	/*
 	APortal_PortalDemo* Portal = *PortalManager->PortalMap.Find(Type);
 	

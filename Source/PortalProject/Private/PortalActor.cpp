@@ -328,7 +328,7 @@ void APortalActor::TeleportChar()
 {
 	// Teleport the character.
 	ACharacter* PC = UGameplayStatics::GetPlayerCharacter(World, 0);
-	PC->SetActorLocationAndRotation(UpdateLocation(PC->GetActorLocation()), UpdateRotation(PC->GetActorRotation()));
+	PC->SetActorLocationAndRotation(UpdateLocation(PC->GetActorLocation()) + LinkedPortal->ForwardDirection->GetForwardVector() * 1, UpdateRotation(PC->GetActorRotation()));
 
 	// Set the new control rotation.
 	APlayerController* Cont = UGameplayStatics::GetPlayerController(World, 0);
