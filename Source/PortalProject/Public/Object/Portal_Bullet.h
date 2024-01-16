@@ -46,16 +46,6 @@ public:
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="BulletTypeSettings")
 	EPortalType Type;
 
-
-	UPROPERTY(EditAnywhere,Category="ColorSettings")
-	APortal_PortalDemo* PortalColor;
-
-	
-
-
 	UFUNCTION()
 	void OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
-	
-	
 };

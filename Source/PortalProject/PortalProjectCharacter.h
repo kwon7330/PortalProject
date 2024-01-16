@@ -93,8 +93,6 @@ public:
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Portal_Settings")
 	UPlayerMove* MoveComp;
-	
-
 
 //=================================================================================================================================	
 
@@ -176,7 +174,6 @@ public:
 	// 버튼을 누르는 함수
 	void PushButton();
 
-
 //=================================================================================================================================	
 
 	void RemovePortal(EPortalType OldPortalType);
@@ -216,5 +213,12 @@ public:
 	
 	
 	
+// =============== UI =========================
+public:
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<class UPlayerUI> PlayerUIClass;
+
+	UPROPERTY(VisibleAnywhere, Category = "UI")
+	UPlayerUI* PlayerUI;
 };
 

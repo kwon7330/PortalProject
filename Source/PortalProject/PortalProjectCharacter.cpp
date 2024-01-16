@@ -1,9 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "PortalProjectCharacter.h"
-
 #include "EngineUtils.h"
-
 #include "Animation/AnimInstance.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -12,7 +10,9 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "PlayerMove.h"
+#include "PlayerUI.h"
 #include "AI/Portal_Turret.h"
+#include "Blueprint/UserWidget.h"
 #include "Engine/LocalPlayer.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -76,7 +76,7 @@ void APortalProjectCharacter::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
-
+	
 	// Add Input Mapping Context
 	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
 	{
@@ -84,8 +84,14 @@ void APortalProjectCharacter::BeginPlay()
 		{
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
+		
+		GetMesh()->SetVisibleInSceneCaptureOnly(true);
 	}
 
+	// Create UI
+	checkf(PlayerUIClass, TEXT("Player UI 클래스가 지정되지 않음"));
+	PlayerUI = CreateWidget<UPlayerUI>(GetWorld(), PlayerUIClass);
+	PlayerUI->AddToViewport();
 }
 
 void APortalProjectCharacter::SetHasRifle(bool bNewHasRifle)
@@ -330,8 +336,14 @@ void APortalProjectCharacter::ServerPRC_ReleaseCube_Implementation()
 		bHasCube = false;
 		OwnedCube->SetOwner(nullptr);
 		OwnedCube = nullptr;
+		
 	}
+	
 }
+
+
+//=================================================================================================================================	
+
 
 void APortalProjectCharacter::MultiRPC_ReleaseCube_Implementation(AActor* Cube)
 {
@@ -347,8 +359,6 @@ void APortalProjectCharacter::ServerRPC_ObjectCheck_Implementation()
 	auto PCM2 = UGameplayStatics::GetPlayerCameraManager(GetWorld(),1);
 
 	FHitResult HitInfo;
-	FVector CameraLocation;
-	FRotator CameraRotation;
 	// 카메라의 위치를 시작지점
 	FVector StartPoint = PCM->GetCameraLocation();
 	// 카메라의 시작지점에서 카메라의 회전 백터에 힘 150을 더하여 끝지점을 정한다.
@@ -390,8 +400,6 @@ void APortalProjectCharacter::ServerRPC_ObjectCheck_Implementation()
 void APortalProjectCharacter::MultiRPC_ObjectCheck_Implementation(APlayerCameraManager* PCM2)
 {
 	FHitResult HitInfo;
-	FVector CameraLocation;
-	FRotator CameraRotation;
 	// 카메라의 위치를 시작지점
 	if(PCM2 != nullptr)
 	{
@@ -428,7 +436,6 @@ void APortalProjectCharacter::MultiRPC_ObjectCheck_Implementation(APlayerCameraM
 			isPushButton = false;
 			isTakeCube = false;
 		}
-
 	}
 }
 
@@ -452,7 +459,7 @@ void APortalProjectCharacter::GetLifetimeReplicatedProps(TArray<FLifetimePropert
 void APortalProjectCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	CheckObject();
+	//CheckObject();
 }
 
 //=================================================================================================================================	
