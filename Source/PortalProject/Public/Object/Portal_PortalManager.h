@@ -28,13 +28,19 @@ public:
 
 public:
 	UPROPERTY(EditAnywhere,Category="PortalManagerSettings")
-	APortal_PortalDemo* BluePortal;
+	class APortalActor* BluePortal;
 	UPROPERTY(EditAnywhere,Category="PortalManagerSettings")
-	APortal_PortalDemo* PurplePortal;
+	APortalActor* PurplePortal;
 	UPROPERTY(EditAnywhere,Category="PortalManagerSettings")
-	APortal_PortalDemo* RedPortal;
+	APortalActor* RedPortal;
 	UPROPERTY(EditAnywhere,Category="PortalManagerSettings")
-	APortal_PortalDemo* OrangePortal;
+	APortalActor* OrangePortal;
+
+	
+	UPROPERTY(EditAnywhere, Category = "Portal")
+	TSubclassOf<class APortalActor> PortalClass;
+	
+	void RequestPortal(EPortalType Type, const FTransform& Transform);
 
 	/*TMap<EPortalType, APortal_PortalDemo*> PortalMap;*/
 	

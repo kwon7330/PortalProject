@@ -7,7 +7,6 @@
 #include "Components/BoxComponent.h"
 #include "EntitySystem/MovieSceneEntitySystemRunner.h"
 #include "Object/Portal_Bullet.h"
-#include "Object/Portal_CloseBullet.h"
 #include "Object/Portal_Cube.h"
 #include "Object/Portal_PortalDemo.h"
 
@@ -31,57 +30,4 @@ APortal_Tablet::APortal_Tablet()
 void APortal_Tablet::BeginPlay()
 {
 	Super::BeginPlay();
-	BoxComponent->OnComponentBeginOverlap.AddDynamic(this,&APortal_Tablet::OnOverlapBegin);
 }
-
-
-void APortal_Tablet::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
-
-void APortal_Tablet::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	//UE_LOG(LogTemp,Warning,TEXT("Overlaped!!!!!!!!!!!!!!!!!!!!!!!!!!"));
-	// 포탈 총알이 부딪히면 총알이 포탈을 여는 총알이면 여는 포탈을 생성한다.
-	// 포탈이 생성 되었을 때 하나라도 존재하면 기존에 있던 포탈을 없에고 다시 포탈을 생성한다.
-	auto Portal = Cast<APortal_Bullet>(OtherActor);
-	
-	if(Portal!= nullptr)
-	{
-		if(Portal->Type == EPortalType::Player1Blue)
-		{
-			
-			UE_LOG(LogTemp,Warning,TEXT("BluePortal"));
-			
-			
-		}
-		else if(Portal->Type == EPortalType::Player1Purple)
-		{
-			
-			UE_LOG(LogTemp,Warning,TEXT("PurplePortal"));
-			
-
-		}
-		else if(Portal->Type == EPortalType::Player2Orange)
-		{
-			
-			UE_LOG(LogTemp,Warning,TEXT("OrangePortal"));
-			
-
-		}
-		else if(Portal->Type == EPortalType::Player2Red)
-		{
-			
-			UE_LOG(LogTemp,Warning,TEXT("RedPortal"));
-			
-
-
-		}
-	}
-}
-
-
-

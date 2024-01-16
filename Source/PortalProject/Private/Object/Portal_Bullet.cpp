@@ -3,6 +3,7 @@
 
 #include "Object/Portal_Bullet.h"
 
+#include "PortalActor.h"
 #include "Chaos/Deformable/ChaosDeformableCollisionsProxy.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
@@ -23,8 +24,8 @@ APortal_Bullet::APortal_Bullet()
 	MeshComp->SetupAttachment(SphereComp);
 
 	ProjectileMovementComp = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovementComp"));
-	ProjectileMovementComp -> InitialSpeed = 2000;
-	ProjectileMovementComp -> MaxSpeed = 2000;
+	ProjectileMovementComp -> InitialSpeed = 4000;
+	ProjectileMovementComp -> MaxSpeed = 4000;
 }
 
 
@@ -48,9 +49,6 @@ void APortal_Bullet::BeginPlay()
 	PortalManager->PortalMap.Add(Type, SpawnActor);
 	*/
 }
-	
-
-
 
 void APortal_Bullet::Tick(float DeltaTime)
 {
@@ -62,42 +60,13 @@ void APortal_Bullet::Tick(float DeltaTime)
 void APortal_Bullet::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	auto Tablet = Cast<APortal_Tablet>(OtherActor);
-	if(Tablet != nullptr)
+	UE_LOG(LogTemp, Warning, TEXT("Bullet Overlapped: %s"), *OtherActor->GetActorNameOrLabel());
+
+	APortal_Tablet* Tablet = Cast<APortal_Tablet>(OtherActor);
+	if (Tablet != nullptr)
 	{
-		switch (Type)
-		{
-		case EPortalType::Player1Blue:
-			{
-				if (PortalManager->BluePortal != nullptr)
-				{
-					PortalManager->BluePortal->Destroy();
-				}
-				// 스폰
-				FTransform SpawnPortalPoint1 = Tablet->SpawnPoint->GetComponentTransform();
-				PortalManager->BluePortal = GetWorld()->SpawnActor<APortal_PortalDemo>(Tablet->SpawnFactory,SpawnPortalPoint1);	
-			}
-			break;
-		case EPortalType::Player1Purple:
-			{
-				if(PortalManager->PurplePortal != nullptr)
-				{
-					PortalManager->BluePortal->Destroy();
-				}
-				FTransform SpawnPortalPoint2 = Tablet->SpawnPoint->GetComponentTransform();
-				PortalManager->BluePortal = GetWorld()->SpawnActor<APortal_PortalDemo>(Tablet->SpawnFactory,SpawnPortalPoint2);
-			}
-			break;
-		
-		case EPortalType::Player2Orange:
-			// if(PortalManager != nullptr)
-			// {
-			// 	PortalManager->OrangePortal->Destroy();
-			// }
-			break;
-		case EPortalType::Player2Red:
-			break;
-		}
+		PortalManager->RequestPortal(Type, Tablet->SpawnPoint->GetComponentTransform());
+		this->Destroy();
 	}
 }
 
