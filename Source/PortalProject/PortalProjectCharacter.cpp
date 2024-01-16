@@ -459,7 +459,7 @@ void APortalProjectCharacter::GetLifetimeReplicatedProps(TArray<FLifetimePropert
 void APortalProjectCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	//CheckObject();
+	CheckObject();
 }
 
 //=================================================================================================================================	
