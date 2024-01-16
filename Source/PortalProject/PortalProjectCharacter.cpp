@@ -16,10 +16,12 @@
 #include "Engine/LocalPlayer.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Layers/LayersSubsystem.h"
 #include "Net/UnrealNetwork.h"
 #include "Object/Portal_Bullet.h"
 #include "Object/Portal_Cube.h"
 #include "Object/Portal_SmallButton.h"
+#include "Object/Portal_Tablet.h"
 
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
@@ -61,7 +63,8 @@ APortalProjectCharacter::APortalProjectCharacter()
 	AttachComp = CreateDefaultSubobject<USceneComponent>("AttachComp");
 	AttachComp ->SetupAttachment(PortalGun,FName(TEXT("FirePoint")));
 	//(X=-0.000000,Y=101.808839,Z=135.134964)
-	AttachComp-> SetRelativeLocation(FVector(0.f));
+	//(X=636.894156,Y=-55.584951,Z=-101.822835)
+	AttachComp-> SetRelativeLocation(FVector(636.f,-55.f,-101.f));
 
 	// 플레이어 시점 고정.
 	bUseControllerRotationYaw = true;
@@ -201,7 +204,31 @@ void APortalProjectCharacter::LeftClickPortal(const FInputActionValue& Value)
 	// 큐브를 들고있으면 총을 쏘지 못한다.
 	if(bHasCube == false)
 	{
-		ServerRPC_LeftClick();
+		//ServerRPC_LeftClick();
+		
+		APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this,0);
+		if(PlayerController != nullptr)
+		{
+			auto PCM = UGameplayStatics::GetPlayerCameraManager(GetWorld(),0);
+			FHitResult HitInfo;
+			FVector StartPoint = PCM->GetCameraLocation();
+			FVector EndPoint = StartPoint + PlayerController->GetControlRotation().Vector() * 10000;
+			FCollisionQueryParams Params;
+			Params.AddIgnoredActor(this);
+			bool bHit = GetWorld()->LineTraceSingleByChannel(HitInfo,StartPoint,EndPoint,ECC_Visibility,Params);
+			DrawDebugLine(GetWorld(), StartPoint, EndPoint, FColor::Red, false, 2, 0, 1.0f);
+			if(bHit == true)
+			{
+				auto Tablets = Cast<APortal_Tablet>(HitInfo.GetActor());
+				if(Tablets != nullptr)
+				{
+					FTransform SpawnPoint = HitInfo.GetActor()->GetActorTransform();
+					APortal_Bullet* Bullet = GetWorld()->SpawnActorDeferred<APortal_Bullet>(BulletFactory,SpawnPoint);
+					Bullet->Type = EPortalType::Player1Blue;
+					UGameplayStatics::FinishSpawningActor(Bullet, SpawnPoint);
+				}
+			}
+		}
 		
 	}
 }
@@ -212,8 +239,32 @@ void APortalProjectCharacter::RightClickPortal(const FInputActionValue& Value)
 	// 큐브를 들고있으면 총을 쏘지 못한다.
 	if(bHasCube == false)
 	{
-		ServerRPC_RightClick();
-		
+		//ServerRPC_RightClick();
+		APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this,0);
+		if(PlayerController != nullptr)
+		{
+			auto PCM = UGameplayStatics::GetPlayerCameraManager(GetWorld(),0);
+			FHitResult HitInfo;
+			FVector StartPoint = PCM->GetCameraLocation();
+			FVector EndPoint = StartPoint + PlayerController->GetControlRotation().Vector() * 10000;
+			FCollisionQueryParams Params;
+			Params.AddIgnoredActor(this);
+			bool bHit = GetWorld()->LineTraceSingleByChannel(HitInfo,StartPoint,EndPoint,ECC_Visibility,Params);
+			DrawDebugLine(GetWorld(), StartPoint, EndPoint, FColor::Red, false, 5, 0, 1.0f);
+			if(bHit == true)
+			{
+				
+				auto Tablets = Cast<APortal_Tablet>(HitInfo.GetActor());
+				if(Tablets != nullptr)
+				{
+					FTransform SpawnPoint = HitInfo.GetActor()->GetActorTransform();
+					APortal_Bullet* Bullet = GetWorld()->SpawnActorDeferred<APortal_Bullet>(BulletFactory,SpawnPoint);
+					Bullet->Type = EPortalType::Player1Purple;
+					UGameplayStatics::FinishSpawningActor(Bullet, SpawnPoint);
+					
+				}
+			}
+		}
 	}
 	
 	
@@ -228,7 +279,43 @@ void APortalProjectCharacter::CheckObject()
 	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this, 0);
 	if(PlayerController)
 	{
-		ServerRPC_ObjectCheck();
+		auto PCM = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
+		//auto PCM2 = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 1);
+		FHitResult HitInfo;
+		// 카메라의 위치를 시작지점
+		FVector StartPoint = PCM->GetCameraLocation();
+		// 카메라의 시작지점에서 카메라의 회전 백터에 힘 150을 더하여 끝지점을 정한다.
+		FVector EndPoint = StartPoint + PlayerController->GetControlRotation().Vector() * 150;
+		FCollisionQueryParams Params;
+		// 자신은 콜리전 무시
+		Params.AddIgnoredActor(this);
+		bool bHit = GetWorld()->LineTraceSingleByChannel(HitInfo,StartPoint,EndPoint,ECC_Visibility,Params);
+		//DrawDebugLine(GetWorld(), StartPoint, EndPoint, FColor::Green, false, -1, 0, 1.0f);
+		if(bHit)
+		{
+			// 충돌한 물체를 판단해서
+			AActor* HitActor = HitInfo.GetActor();
+			if(HitActor)
+			{
+				// 충돌한 물체가 버튼이면
+				if(HitActor->IsA<APortal_SmallButton>())
+				{
+					// 버튼을 누를 수 있는것을 true
+					isPushButton = true;
+				}
+				// 충돌한 물체가 큐브라면
+				else if(HitActor->IsA<APortal_Cube>())
+				{
+					// 큐브를 집는것을 true
+					isTakeCube =true;
+				}
+			}
+		}
+		else
+		{
+			isPushButton = false;
+			isTakeCube = false;
+		}
 	}	
 }
 //=================================================================================================================================	
@@ -258,7 +345,10 @@ void APortalProjectCharacter::RemovePortal(EPortalType OldPortalType)
 	}
 }
 
-
+void APortalProjectCharacter::MultiRPC_CheckObj_Implementation()
+{
+	
+}
 
 
 //=================================================================================================================================	
@@ -351,103 +441,13 @@ void APortalProjectCharacter::MultiRPC_ReleaseCube_Implementation(AActor* Cube)
 }
 
 
-void APortalProjectCharacter::ServerRPC_ObjectCheck_Implementation()
-{
-	
-
-	auto PCM = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
-	auto PCM2 = UGameplayStatics::GetPlayerCameraManager(GetWorld(),1);
-
-	FHitResult HitInfo;
-	// 카메라의 위치를 시작지점
-	FVector StartPoint = PCM->GetCameraLocation();
-	// 카메라의 시작지점에서 카메라의 회전 백터에 힘 150을 더하여 끝지점을 정한다.
-	FVector EndPoint = StartPoint + PCM->GetCameraRotation().Vector() * 150;
-	FCollisionQueryParams Params;
-	// 자신은 콜리전 무시
-	Params.AddIgnoredActor(this);
-	bool bHit = GetWorld()->LineTraceSingleByChannel(HitInfo,StartPoint,EndPoint,ECC_Visibility,Params);
-	DrawDebugLine(GetWorld(), StartPoint, HitInfo.Location, FColor::Green, false, 2.0f, 0, 1.0f);
-	if(bHit)
-	{
-		// 충돌한 물체를 판단해서
-		AActor* HitActor = HitInfo.GetActor();
-		if(HitActor)
-		{
-			// 충돌한 물체가 버튼이면
-			if(HitActor->IsA<APortal_SmallButton>())
-			{
-				// 버튼을 누를 수 있는것을 true
-				isPushButton = true;
-			}
-			// 충돌한 물체가 큐브라면
-			else if(HitActor->IsA<APortal_Cube>())
-			{
-				// 큐브를 집는것을 true
-				isTakeCube =true;
-			}
-		}
-	}
-	else
-	{
-		isPushButton = false;
-		isTakeCube = false;
-	}
-	
-	MultiRPC_ObjectCheck(PCM2);
-}
-
-void APortalProjectCharacter::MultiRPC_ObjectCheck_Implementation(APlayerCameraManager* PCM2)
-{
-	FHitResult HitInfo;
-	// 카메라의 위치를 시작지점
-	if(PCM2 != nullptr)
-	{
-		FVector StartPoint = PCM2->GetCameraLocation();
-		// 카메라의 시작지점에서 카메라의 회전 백터에 힘 150을 더하여 끝지점을 정한다.
-		FVector EndPoint = StartPoint + PCM2->GetCameraRotation().Vector() * 150;
-		FCollisionQueryParams Params;
-		// 자신은 콜리전 무시
-		Params.AddIgnoredActor(this);
-		bool bHit = GetWorld()->LineTraceSingleByChannel(HitInfo,StartPoint,EndPoint,ECC_Visibility,Params);
-		DrawDebugLine(GetWorld(), StartPoint, HitInfo.Location, FColor::Green, false, 2.0f, 0, 1.0f);
-		if(bHit)
-		{
-			// 충돌한 물체를 판단해서
-			AActor* HitActor = HitInfo.GetActor();
-			if(HitActor)
-			{
-				// 충돌한 물체가 버튼이면
-				if(HitActor->IsA<APortal_SmallButton>())
-				{
-					// 버튼을 누를 수 있는것을 true
-					isPushButton = true;
-				}
-				// 충돌한 물체가 큐브라면
-				else if(HitActor->IsA<APortal_Cube>())
-				{
-					// 큐브를 집는것을 true
-					isTakeCube =true;
-				}
-			}
-		}
-		else
-		{
-			isPushButton = false;
-			isTakeCube = false;
-		}
-	}
-}
-
-
 
 
 void APortalProjectCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(APortalProjectCharacter, bHasCube);
-	DOREPLIFETIME(APortalProjectCharacter, isPushButton);
-	DOREPLIFETIME(APortalProjectCharacter, isTakeCube);
+	
 	
 
 }

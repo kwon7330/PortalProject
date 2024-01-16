@@ -145,6 +145,10 @@ public:
 	TSubclassOf<APortal_Bullet> BulletFactory;
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<APortal_Bullet> CloseBulletFactory;
+
+	UPROPERTY(EditAnywhere)
+	APortal_Bullet* BulletType;
+
 	
 	void LeftClickPortal(const FInputActionValue& Value);
 	void RightClickPortal(const FInputActionValue& Value);
@@ -164,10 +168,11 @@ public:
 	
 	// E키를 사용했을 때 버튼과 큐브를 누를 수 있도록 구분
 
-	UPROPERTY(Replicated)
+	
 	bool isPushButton = false;
-	UPROPERTY(Replicated)
+	
 	bool isTakeCube = false;
+	
 	
 //=================================================================================================================================	
 
@@ -182,12 +187,12 @@ public:
 //=================================================================================================================================	
 
 	// 네트워크
-	UFUNCTION(Server,Reliable)
-	void ServerRPC_ObjectCheck();
-	UFUNCTION(NetMulticast,Unreliable)
-	void MultiRPC_ObjectCheck(APlayerCameraManager* PCM2);
+
 	
-	
+	UFUNCTION(Client,Unreliable)
+	void MultiRPC_CheckObj();
+
+
 	
 	UFUNCTION(Server,Reliable)
 	void ServerRPC_LeftClick();
