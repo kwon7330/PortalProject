@@ -28,6 +28,6 @@ void AFizzler::PlaneBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActo
 void AFizzler::BeginPlay()
 {
 	Super::BeginPlay();
-	Plane->OnComponentBeginOverlap.AddDynamic(this, AFizzler::PlaneBeginOverlap);
+	Plane->OnComponentBeginOverlap.AddDynamic(this, &AFizzler::PlaneBeginOverlap);
 }
 
