@@ -29,6 +29,9 @@ DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 //////////////////////////////////////////////////////////////////////////
 // APortalProjectCharacter
 
+
+
+
 APortalProjectCharacter::APortalProjectCharacter()
 {
 	// Character doesnt have a rifle at start
@@ -116,7 +119,7 @@ void APortalProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 		
 		// 큐브 Pickup
 		EnhancedInputComponent->BindAction(PickUpAction, ETriggerEvent::Started, this, &APortalProjectCharacter::Pickup);
-		//EnhancedInputComponent->BindAction(PickUpAction, ETriggerEvent::Completed, this, &APortalProjectCharacter::Released);
+		
 		// 여는 포탈 날리기
 		EnhancedInputComponent->BindAction(LeftClickShootAction, ETriggerEvent::Started, this, &APortalProjectCharacter::LeftClickPortal);
 		// 닫는 포탈 날리기
@@ -131,31 +134,31 @@ void APortalProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 //=========================================================================================================================================
 
 
-
 void APortalProjectCharacter::Pickup(const FInputActionValue& Value)
 {
-	// E 키를 눌렀을 때 
-	if(isTakeCube == true && isPushButton == false)
-	{
-		// 큐브를 들고있다면
-		if(bHasCube == true)
-		{	UE_LOG(LogTemp,Warning,TEXT("bHasCubeTrue!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"));
-
-			// 큐브를 놓고
-			ReleaseCube();
-		}
-		// 큐브를 들고있지않다면 	
-		else
-		{
-			UE_LOG(LogTemp,Warning,TEXT("bHasCubeFalse!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"));
-			// 큐브를 든다.
-			PickupCube();
-		}
-	}
-	else if(isTakeCube == false && isPushButton == true)
-	{
-		PushButton();
-	}
+	//E 키를 눌렀을 때 
+	// if(isTakeCube == true && isPushButton == false)
+	// {
+	// 	// 큐브를 들고있다면
+	// 	if(bHasCube == true)
+	// 	{	UE_LOG(LogTemp,Warning,TEXT("bHasCubeTrue!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"));
+	//
+	// 		// 큐브를 놓고
+	// 		
+	// 	}
+	// 	// 큐브를 들고있지않다면 	
+	// 	else
+	// 	{
+	// 		UE_LOG(LogTemp,Warning,TEXT("bHasCubeFalse!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"));
+	// 		// 큐브를 든다.
+	// 		PickupCube();
+	// 	}
+	// }
+	// else if(isTakeCube == false && isPushButton == true)
+	// {
+	// 	PushButton();
+	// }
+	CheckObject();
 }
 
 
@@ -199,74 +202,13 @@ void APortalProjectCharacter::ReleaseCube()
 
 void APortalProjectCharacter::LeftClickPortal(const FInputActionValue& Value)
 {
-	
-	// 만약 컴퍼넌트의 주인이 플레이어 1 이라면 파란 색 포탈을 생성하고, 주인이 플레이어 2라면 주황색 포탈을 생성한다.
-	// 큐브를 들고있으면 총을 쏘지 못한다.
-	if(bHasCube == false)
-	{
-		//ServerRPC_LeftClick();
-		
-		APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this,0);
-		if(PlayerController != nullptr)
-		{
-			auto PCM = UGameplayStatics::GetPlayerCameraManager(GetWorld(),0);
-			FHitResult HitInfo;
-			FVector StartPoint = PCM->GetCameraLocation();
-			FVector EndPoint = StartPoint + PlayerController->GetControlRotation().Vector() * 10000;
-			FCollisionQueryParams Params;
-			Params.AddIgnoredActor(this);
-			bool bHit = GetWorld()->LineTraceSingleByChannel(HitInfo,StartPoint,EndPoint,ECC_Visibility,Params);
-			DrawDebugLine(GetWorld(), StartPoint, EndPoint, FColor::Red, false, 2, 0, 1.0f);
-			if(bHit == true)
-			{
-				auto Tablets = Cast<APortal_Tablet>(HitInfo.GetActor());
-				if(Tablets != nullptr)
-				{
-					FTransform SpawnPoint = HitInfo.GetActor()->GetActorTransform();
-					APortal_Bullet* Bullet = GetWorld()->SpawnActorDeferred<APortal_Bullet>(BulletFactory,SpawnPoint);
-					Bullet->Type = EPortalType::Player1Blue;
-					UGameplayStatics::FinishSpawningActor(Bullet, SpawnPoint);
-				}
-			}
-		}
-		
-	}
+	ServerRPC_LeftClick();
 }
 
 void APortalProjectCharacter::RightClickPortal(const FInputActionValue& Value)
 {
-	// 만약 컴퍼넌트의 주인이 플레이어 1 이라면 보라 색 포탈을 생성하고, 주인이 플레이어 2라면 붉은색 포탈을 생성한다.
-	// 큐브를 들고있으면 총을 쏘지 못한다.
-	if(bHasCube == false)
-	{
-		//ServerRPC_RightClick();
-		APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this,0);
-		if(PlayerController != nullptr)
-		{
-			auto PCM = UGameplayStatics::GetPlayerCameraManager(GetWorld(),0);
-			FHitResult HitInfo;
-			FVector StartPoint = PCM->GetCameraLocation();
-			FVector EndPoint = StartPoint + PlayerController->GetControlRotation().Vector() * 10000;
-			FCollisionQueryParams Params;
-			Params.AddIgnoredActor(this);
-			bool bHit = GetWorld()->LineTraceSingleByChannel(HitInfo,StartPoint,EndPoint,ECC_Visibility,Params);
-			DrawDebugLine(GetWorld(), StartPoint, EndPoint, FColor::Red, false, 5, 0, 1.0f);
-			if(bHit == true)
-			{
-				
-				auto Tablets = Cast<APortal_Tablet>(HitInfo.GetActor());
-				if(Tablets != nullptr)
-				{
-					FTransform SpawnPoint = HitInfo.GetActor()->GetActorTransform();
-					APortal_Bullet* Bullet = GetWorld()->SpawnActorDeferred<APortal_Bullet>(BulletFactory,SpawnPoint);
-					Bullet->Type = EPortalType::Player1Purple;
-					UGameplayStatics::FinishSpawningActor(Bullet, SpawnPoint);
-					
-				}
-			}
-		}
-	}
 	
+	ServerRPC_RightClick();
 	
 }
 //=================================================================================================================================	
@@ -290,31 +232,21 @@ void APortalProjectCharacter::CheckObject()
 		// 자신은 콜리전 무시
 		Params.AddIgnoredActor(this);
 		bool bHit = GetWorld()->LineTraceSingleByChannel(HitInfo,StartPoint,EndPoint,ECC_Visibility,Params);
-		//DrawDebugLine(GetWorld(), StartPoint, EndPoint, FColor::Green, false, -1, 0, 1.0f);
 		if(bHit)
 		{
 			// 충돌한 물체를 판단해서
 			AActor* HitActor = HitInfo.GetActor();
 			if(HitActor)
 			{
-				// 충돌한 물체가 버튼이면
-				if(HitActor->IsA<APortal_SmallButton>())
-				{
-					// 버튼을 누를 수 있는것을 true
-					isPushButton = true;
-				}
-				// 충돌한 물체가 큐브라면
-				else if(HitActor->IsA<APortal_Cube>())
-				{
-					// 큐브를 집는것을 true
-					isTakeCube =true;
-				}
+				isTakeCube = true;
+				auto Object = Cast<IInteractable>(HitActor);
+				Object->Interact_Implementation();
 			}
 		}
 		else
 		{
-			isPushButton = false;
-			isTakeCube = false;
+			 // isPushButton = false;
+			 isTakeCube = false;
 		}
 	}	
 }
@@ -360,11 +292,37 @@ void APortalProjectCharacter::ServerRPC_LeftClick_Implementation()
 
 void APortalProjectCharacter::MultiRPC_LeftClick_Implementation()
 {
-	UE_LOG(LogTemp,Warning,TEXT("LeftClickShoot"));
-	FTransform FirePoint = PortalGun->GetSocketTransform(FName("FirePoint"));
-	APortal_Bullet* Bullet = GetWorld()->SpawnActorDeferred<APortal_Bullet>(BulletFactory,FirePoint);
-	Bullet->Type = EPortalType::Player1Blue;
-	UGameplayStatics::FinishSpawningActor(Bullet, FirePoint);
+	// 만약 컴퍼넌트의 주인이 플레이어 1 이라면 파란 색 포탈을 생성하고, 주인이 플레이어 2라면 주황색 포탈을 생성한다.
+	// 큐브를 들고있으면 총을 쏘지 못한다.
+	if(bHasCube == false)
+	{
+		//ServerRPC_LeftClick();
+		
+		APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this,0);
+		if(PlayerController != nullptr)
+		{
+			auto PCM = UGameplayStatics::GetPlayerCameraManager(GetWorld(),0);
+			FHitResult HitInfo;
+			FVector StartPoint = PCM->GetCameraLocation();
+			FVector EndPoint = StartPoint + PlayerController->GetControlRotation().Vector() * 10000;
+			FCollisionQueryParams Params;
+			Params.AddIgnoredActor(this);
+			bool bHit = GetWorld()->LineTraceSingleByChannel(HitInfo,StartPoint,EndPoint,ECC_Visibility,Params);
+			DrawDebugLine(GetWorld(), StartPoint, EndPoint, FColor::Red, false, 2, 0, 1.0f);
+			if(bHit == true)
+			{
+				auto Tablets = Cast<APortal_Tablet>(HitInfo.GetActor());
+				if(Tablets != nullptr)
+				{
+					FTransform SpawnPoint = HitInfo.GetActor()->GetActorTransform();
+					APortal_Bullet* Bullet = GetWorld()->SpawnActorDeferred<APortal_Bullet>(BulletFactory,SpawnPoint);
+					Bullet->Type = EPortalType::Player1Blue;
+					UGameplayStatics::FinishSpawningActor(Bullet, SpawnPoint);
+				}
+			}
+		}
+		
+	}
 }
 
 void APortalProjectCharacter::ServerRPC_RightClick_Implementation()
@@ -375,59 +333,84 @@ void APortalProjectCharacter::ServerRPC_RightClick_Implementation()
 
 void APortalProjectCharacter::MultiRPC_RightClick_Implementation()
 {
-	UE_LOG(LogTemp,Warning,TEXT("RightClickShoot"));
-	FTransform FirePoint = PortalGun->GetSocketTransform(FName("FirePoint"));
-	APortal_Bullet* Bullet = GetWorld()->SpawnActorDeferred<APortal_Bullet>(BulletFactory,FirePoint);
-	Bullet->Type = EPortalType::Player1Purple;
-	UGameplayStatics::FinishSpawningActor(Bullet, FirePoint);
+	// 만약 컴퍼넌트의 주인이 플레이어 1 이라면 보라 색 포탈을 생성하고, 주인이 플레이어 2라면 붉은색 포탈을 생성한다.
+	// 큐브를 들고있으면 총을 쏘지 못한다.
+	if(bHasCube == false)
+	{
+		//ServerRPC_RightClick();
+		APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this,0);
+		if(PlayerController != nullptr)
+		{
+			auto PCM = UGameplayStatics::GetPlayerCameraManager(GetWorld(),0);
+			FHitResult HitInfo;
+			FVector StartPoint = PCM->GetCameraLocation();
+			FVector EndPoint = StartPoint + PlayerController->GetControlRotation().Vector() * 10000;
+			FCollisionQueryParams Params;
+			Params.AddIgnoredActor(this);
+			bool bHit = GetWorld()->LineTraceSingleByChannel(HitInfo,StartPoint,EndPoint,ECC_Visibility,Params);
+			DrawDebugLine(GetWorld(), StartPoint, EndPoint, FColor::Red, false, 5, 0, 1.0f);
+			if(bHit == true)
+			{
+				
+				auto Tablets = Cast<APortal_Tablet>(HitInfo.GetActor());
+				if(Tablets != nullptr)
+				{
+					FTransform SpawnPoint = HitInfo.GetActor()->GetActorTransform();
+					APortal_Bullet* Bullet = GetWorld()->SpawnActorDeferred<APortal_Bullet>(BulletFactory,SpawnPoint);
+					Bullet->Type = EPortalType::Player1Purple;
+					UGameplayStatics::FinishSpawningActor(Bullet, SpawnPoint);
+					
+				}
+			}
+		}
+	}
 }
 
 
 void APortalProjectCharacter::ServerRPC_PickupCube_Implementation()
 {
 
-	UE_LOG(LogTemp,Warning,TEXT("ServerRPC_PickupCube!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"));
-	// 필요 속성 : 큐브 여부, 큐브와의 거리
-	TArray<AActor*> AllActors;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(),AActor::StaticClass(),AllActors);
-	
-	for(auto TempCube : AllActors)
-	{
-		//UE_LOG(LogTemp,Warning,TEXT("@@@@@@@@@@@@@@@@@@@@@@@@@@@@"));
-		if(TempCube->GetName().Contains("BP_PortalCube") == false)
-		{
-			continue;
-		}
-		//float Distance = FVector::Dist(PortalGun->GetComponentLocation(),TempCube->GetActorLocation());
-		if(isTakeCube == false)
-		{
-			continue;
-		}
-		UE_LOG(LogTemp,Warning,TEXT("TakeCube!!!!!!!!!!!!!!!!!!!!!!!!!"));
-		bHasCube = true;
-		OwnedCube = TempCube;
-		OwnedCube->SetOwner(this);
-		MultiRPC_PickupCube(OwnedCube);
-		break;
-	}
+	// UE_LOG(LogTemp,Warning,TEXT("ServerRPC_PickupCube!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"));
+	// // 필요 속성 : 큐브 여부, 큐브와의 거리
+	// TArray<AActor*> AllActors;
+	// UGameplayStatics::GetAllActorsOfClass(GetWorld(),AActor::StaticClass(),AllActors);
+	//
+	// for(auto TempCube : AllActors)
+	// {
+	// 	//UE_LOG(LogTemp,Warning,TEXT("@@@@@@@@@@@@@@@@@@@@@@@@@@@@"));
+	// 	if(TempCube->GetName().Contains("BP_PortalCube") == false)
+	// 	{
+	// 		continue;
+	// 	}
+	// 	if(isTakeCube == false)
+	// 	{
+	// 		continue;
+	// 	}
+	// 	UE_LOG(LogTemp,Warning,TEXT("TakeCube!!!!!!!!!!!!!!!!!!!!!!!!!"));
+	// 	bHasCube = true;
+	// 	OwnedCube = TempCube;
+	// 	OwnedCube->SetOwner(this);
+	// 	MultiRPC_PickupCube(OwnedCube);
+	// 	break;
+	// }
 }
 
 
 void APortalProjectCharacter::MultiRPC_PickupCube_Implementation(AActor* Cube)
 {
-	AttachCube(Cube);
+	//AttachCube(Cube);
 }
 
 void APortalProjectCharacter::ServerPRC_ReleaseCube_Implementation()
 {
-	if(OwnedCube)
-	{
-		MultiRPC_ReleaseCube(OwnedCube);
-		bHasCube = false;
-		OwnedCube->SetOwner(nullptr);
-		OwnedCube = nullptr;
-		
-	}
+	// if(OwnedCube)
+	// {
+	// 	MultiRPC_ReleaseCube(OwnedCube);
+	// 	bHasCube = false;
+	// 	OwnedCube->SetOwner(nullptr);
+	// 	OwnedCube = nullptr;
+	// 	
+	// }
 	
 }
 
@@ -437,7 +420,7 @@ void APortalProjectCharacter::ServerPRC_ReleaseCube_Implementation()
 
 void APortalProjectCharacter::MultiRPC_ReleaseCube_Implementation(AActor* Cube)
 {
-	DetachCube(Cube);
+	//DetachCube(Cube);
 }
 
 
@@ -459,7 +442,7 @@ void APortalProjectCharacter::GetLifetimeReplicatedProps(TArray<FLifetimePropert
 void APortalProjectCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	CheckObject();
+	//CheckObject();
 }
 
 //=================================================================================================================================	

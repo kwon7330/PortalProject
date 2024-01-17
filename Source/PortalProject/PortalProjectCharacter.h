@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "InputActionValue.h"
+#include "Interactable.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
 #include "PortalProjectCharacter.generated.h"
@@ -25,7 +26,7 @@ struct FInputActionValue;
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
 UCLASS(config=Game)
-class APortalProjectCharacter : public ACharacter
+class APortalProjectCharacter : public ACharacter,public IInteractable
 {
 	GENERATED_BODY()
 
@@ -49,7 +50,7 @@ class APortalProjectCharacter : public ACharacter
 	// UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	// UInputAction* MoveAction;
 
-	
+
 
 	
 public:
