@@ -3,6 +3,8 @@
 
 #include "PortalProjectPlayerController.h"
 #include "EnhancedInputSubsystems.h"
+#include "Kismet/GameplayStatics.h"
+#include "Object/Portal_PortalManager.h"
 
 void APortalProjectPlayerController::BeginPlay()
 {
@@ -16,4 +18,25 @@ void APortalProjectPlayerController::BeginPlay()
 
 		UE_LOG(LogTemp, Warning, TEXT("BeginPlay"));
 	}
+
+	AActor* PortalManager = UGameplayStatics::GetActorOfClass(GetWorld(), APortal_PortalManager::StaticClass());
+	check(PortalManager);
+	PortalManager->SetOwner(this);
+}
+
+FMatrix APortalProjectPlayerController::GetCameraProjectionMatrix() const
+{
+	FMatrix ProjectionMatrix;
+
+	if( GetLocalPlayer() != nullptr )
+	{
+		FSceneViewProjectionData PlayerProjectionData;
+
+		GetLocalPlayer()->GetProjectionData( GetLocalPlayer()->ViewportClient->Viewport,
+										PlayerProjectionData );
+
+		ProjectionMatrix = PlayerProjectionData.ProjectionMatrix;
+	}
+
+	return ProjectionMatrix;
 }

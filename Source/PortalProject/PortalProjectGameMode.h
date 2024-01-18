@@ -13,6 +13,14 @@ class APortalProjectGameMode : public AGameModeBase
 
 public:
 	APortalProjectGameMode();
+
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
+	APlayerController* PBody;
+
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
+	APlayerController* Atlas;
+
+	virtual void HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer) override;
 };
 
 

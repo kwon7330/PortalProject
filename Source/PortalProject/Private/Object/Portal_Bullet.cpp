@@ -13,6 +13,7 @@
 #include "Object/Portal_Tablet.h"
 #include "Components/ArrowComponent.h"
 #include "Kismet/KismetMaterialLibrary.h"
+#include "Net/UnrealNetwork.h"
 
 
 APortal_Bullet::APortal_Bullet()
@@ -27,6 +28,12 @@ APortal_Bullet::APortal_Bullet()
 	ProjectileMovementComp = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovementComp"));
 	ProjectileMovementComp -> InitialSpeed = 4000;
 	ProjectileMovementComp -> MaxSpeed = 4000;
+
+	bReplicates = true;
+	bAlwaysRelevant = true;
+	SetReplicateMovement(true);
+
+	SetLifeSpan(5.f);
 }
 
 
@@ -73,9 +80,16 @@ void APortal_Bullet::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor*
 	APortal_Tablet* Tablet = Cast<APortal_Tablet>(OtherActor);
 	if (Tablet != nullptr)
 	{
-		PortalManager->RequestPortal(Type, Tablet->SpawnPoint->GetComponentTransform());
+		PortalManager->RequestPortal(Type, Tablet->SpawnPoint->GetComponentTransform(), GetInstigator());
 		this->Destroy();
 	}
+}
+
+void APortal_Bullet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(APortal_Bullet, Type);
 }
 
 

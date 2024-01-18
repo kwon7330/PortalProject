@@ -28,4 +28,8 @@ protected:
 	virtual void BeginPlay() override;
 
 	// End Actor interface
+
+
+public:
+	FMatrix GetCameraProjectionMatrix() const;
 };

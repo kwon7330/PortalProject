@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "InputActionValue.h"
+#include "Interactable.h"
+#include "PortalProject.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
 #include "PortalProjectCharacter.generated.h"
@@ -25,7 +27,7 @@ struct FInputActionValue;
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
 UCLASS(config=Game)
-class APortalProjectCharacter : public ACharacter
+class APortalProjectCharacter : public ACharacter, public IInteractable
 {
 	GENERATED_BODY()
 
@@ -49,9 +51,6 @@ class APortalProjectCharacter : public ACharacter
 	// UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	// UInputAction* MoveAction;
 
-
-
-	
 public:
 	APortalProjectCharacter();
 
@@ -59,29 +58,15 @@ protected:
 	virtual void BeginPlay();
 
 public:
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
-	bool bHasRifle;
-
-	/** Setter to set the bool */
-	UFUNCTION(BlueprintCallable, Category = Weapon)
-	void SetHasRifle(bool bNewHasRifle);
-
-	/** Getter for the bool */
-	UFUNCTION(BlueprintCallable, Category = Weapon)
-	bool GetHasRifle();
-
-public:
 	virtual void Tick(float DeltaSeconds) override;
 
-
-
 protected:
-	
 	virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;
 	
 
 public:
+	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn), Category = "Portal|Player")
+	EPlayerType PlayerType;
 	
 	USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }
 	
@@ -170,7 +155,7 @@ public:
 
 	
 	bool isPushButton = false;
-	UPROPERTY(Replicated)
+	
 	bool isTakeCube = false;
 	
 	
@@ -180,7 +165,8 @@ public:
 	void PushButton();
 
 //=================================================================================================================================	
-	
+
+	void RemovePortal(EPortalType OldPortalType);
 	
 
 //=================================================================================================================================	
@@ -188,26 +174,29 @@ public:
 	// 네트워크
 
 	
+	UFUNCTION(Client,Unreliable)
+	void MultiRPC_CheckObj();
+
+
 	
 	UFUNCTION(Server,Reliable)
 	void ServerRPC_LeftClick();
-	UFUNCTION(NetMulticast,Unreliable)
-	void MultiRPC_LeftClick();
 
-	
 	UFUNCTION(Server,Reliable)
 	void ServerRPC_RightClick();
-	UFUNCTION(NetMulticast,Unreliable)
-	void MultiRPC_RightClick();
-
-
+	
+	UFUNCTION()
+	void ShootBullet(bool bIsLeftClick);
+	
 	UFUNCTION(Server,Reliable)
-	void ServerRPC_CheckObj();
-	UFUNCTION(NetMulticast,Unreliable)
-	void MultiRPC_CheckObj();
-
+	void ServerRPC_PickupCube();
+	UFUNCTION(NetMulticast,Reliable)
+	void MultiRPC_PickupCube(AActor* Cube);
 	
-	
+	UFUNCTION(Server,Reliable)
+	void ServerPRC_ReleaseCube();
+	UFUNCTION(NetMulticast,Reliable)
+	void MultiRPC_ReleaseCube(AActor* Cube);
 	
 	
 	
