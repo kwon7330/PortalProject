@@ -174,9 +174,9 @@ public:
 	// 네트워크
 
 	
-	UFUNCTION(Client,Unreliable)
-	void MultiRPC_CheckObj();
-
+	
+	UFUNCTION(Server,Reliable)
+	void ServerRPC_CheckObject();
 
 	
 	UFUNCTION(Server,Reliable)
@@ -188,15 +188,7 @@ public:
 	UFUNCTION()
 	void ShootBullet(bool bIsLeftClick);
 	
-	UFUNCTION(Server,Reliable)
-	void ServerRPC_PickupCube();
-	UFUNCTION(NetMulticast,Reliable)
-	void MultiRPC_PickupCube(AActor* Cube);
 	
-	UFUNCTION(Server,Reliable)
-	void ServerPRC_ReleaseCube();
-	UFUNCTION(NetMulticast,Reliable)
-	void MultiRPC_ReleaseCube(AActor* Cube);
 	
 	
 	

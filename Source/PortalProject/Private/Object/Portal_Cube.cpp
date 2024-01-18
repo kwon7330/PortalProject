@@ -39,6 +39,7 @@ void APortal_Cube::Tick(float DeltaTime)
 
 void APortal_Cube::Interact(APortalProjectCharacter* Character)
 {
+	UE_LOG(LogTemp,Warning,TEXT("fkdjfkdjsaflkjslfkja;sldkfj;alkjlk"))
 	// 입력이 한번들어올떄마다  Cube Attach를 하고 Detach로 전환한다.
 	// Attach Detach 전환 하는 변수가 필요하다. -> bCheck;
 	if(bAttached == false)
