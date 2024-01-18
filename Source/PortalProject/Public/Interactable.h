@@ -7,6 +7,8 @@
 #include "Interactable.generated.h"
 
 
+class APortalProjectCharacter;
+
 UINTERFACE(MinimalAPI)
 class UInteractable : public UInterface
 {
@@ -22,6 +24,5 @@ class PORTALPROJECT_API IInteractable
 
 	
 public:
-	UFUNCTION(BlueprintNativeEvent , BlueprintCallable)
-	void Interact();
+	virtual void Interact(APortalProjectCharacter* Character);
 };

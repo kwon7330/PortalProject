@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "InputActionValue.h"
-#include "Interactable.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
 #include "PortalProjectCharacter.generated.h"
@@ -26,7 +25,7 @@ struct FInputActionValue;
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
 UCLASS(config=Game)
-class APortalProjectCharacter : public ACharacter,public IInteractable
+class APortalProjectCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
@@ -171,7 +170,7 @@ public:
 
 	
 	bool isPushButton = false;
-	
+	UPROPERTY(Replicated)
 	bool isTakeCube = false;
 	
 	
@@ -181,8 +180,7 @@ public:
 	void PushButton();
 
 //=================================================================================================================================	
-
-	void RemovePortal(EPortalType OldPortalType);
+	
 	
 
 //=================================================================================================================================	
@@ -190,10 +188,6 @@ public:
 	// 네트워크
 
 	
-	UFUNCTION(Client,Unreliable)
-	void MultiRPC_CheckObj();
-
-
 	
 	UFUNCTION(Server,Reliable)
 	void ServerRPC_LeftClick();
@@ -208,14 +202,12 @@ public:
 
 
 	UFUNCTION(Server,Reliable)
-	void ServerRPC_PickupCube();
+	void ServerRPC_CheckObj();
 	UFUNCTION(NetMulticast,Unreliable)
-	void MultiRPC_PickupCube(AActor* Cube);
+	void MultiRPC_CheckObj();
+
 	
-	UFUNCTION(Server,Reliable)
-	void ServerPRC_ReleaseCube();
-	UFUNCTION(NetMulticast,Unreliable)
-	void MultiRPC_ReleaseCube(AActor* Cube);
+	
 	
 	
 	

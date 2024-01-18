@@ -29,22 +29,26 @@ public:
 public:
 	UPROPERTY(EditAnywhere,Category="PortalCube|Components")
 	UStaticMeshComponent* MeshComp;
-
-	UFUNCTION()
-	virtual void Interact_Implementation() override;
+	
+	virtual void Interact(APortalProjectCharacter* Character) override;
 
 public:
-	UPROPERTY()
-	APortalProjectCharacter* Player;
+	
 
-	UPROPERTY()
-	AActor* OwneddCube = nullptr;
+	UPROPERTY(Replicated)
 	bool bAttached = false;
-
-	bool bCheck = false;
 	
-	void Attached();
-	void Detached();
+	void Attached(APortalProjectCharacter* Charter);
+	void Detached(APortalProjectCharacter* Character);
 
-	
+	UFUNCTION(Server,Reliable)
+	void ServerRPC_Attached(APortalProjectCharacter* Character);
+	UFUNCTION(NetMulticast,Unreliable)
+	void MultiRPC_Attached(APortalProjectCharacter* Character);
+
+
+	UFUNCTION(Server,Reliable)
+	void ServerRPC_Detached(APortalProjectCharacter* Character);
+	UFUNCTION(NetMulticast,Unreliable)
+	void MultiRPC_Detached(APortalProjectCharacter* Character);
 };

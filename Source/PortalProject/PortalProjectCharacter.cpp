@@ -11,6 +11,7 @@
 #include "InputActionValue.h"
 #include "PlayerMove.h"
 #include "PlayerUI.h"
+#include "PortalProjectPlayerController.h"
 #include "AI/Portal_Turret.h"
 #include "Blueprint/UserWidget.h"
 #include "Engine/LocalPlayer.h"
@@ -159,31 +160,32 @@ void APortalProjectCharacter::Pickup(const FInputActionValue& Value)
 	// 	PushButton();
 	// }
 	CheckObject();
+	
 }
 
 
 
-void APortalProjectCharacter::AttachCube(AActor* Cube)
-{
-	UE_LOG(LogTemp,Warning,TEXT("Attach Cube!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"));
-	auto MeshComp = Cube->GetComponentByClass<UStaticMeshComponent>();
-	MeshComp->SetSimulatePhysics(false);
-	MeshComp->AttachToComponent(AttachComp,FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-}
-
-void APortalProjectCharacter::DetachCube(AActor* Cube)
-{
-	UE_LOG(LogTemp,Warning,TEXT("Detach Cube!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"));
-	auto MeshComp = Cube->GetComponentByClass<UStaticMeshComponent>();
-	MeshComp->SetSimulatePhysics(true);
-	MeshComp->DetachFromComponent(FDetachmentTransformRules::KeepRelativeTransform);
-}
+// void APortalProjectCharacter::AttachCube(AActor* Cube)
+// {
+// 	UE_LOG(LogTemp,Warning,TEXT("Attach Cube!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"));
+// 	auto MeshComp = Cube->GetComponentByClass<UStaticMeshComponent>();
+// 	MeshComp->SetSimulatePhysics(false);
+// 	MeshComp->AttachToComponent(AttachComp,FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+// }
+//
+// void APortalProjectCharacter::DetachCube(AActor* Cube)
+// {
+// 	UE_LOG(LogTemp,Warning,TEXT("Detach Cube!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"));
+// 	auto MeshComp = Cube->GetComponentByClass<UStaticMeshComponent>();
+// 	MeshComp->SetSimulatePhysics(true);
+// 	MeshComp->DetachFromComponent(FDetachmentTransformRules::KeepRelativeTransform);
+// }
 
 
 void APortalProjectCharacter::PickupCube()
 {
 	UE_LOG(LogTemp,Warning,TEXT("ItsPickupCube!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"));
-	ServerRPC_PickupCube();
+	
 }
 
 void APortalProjectCharacter::ReleaseCube()
@@ -193,7 +195,7 @@ void APortalProjectCharacter::ReleaseCube()
 	{
 		return;
 	}
-	ServerPRC_ReleaseCube();
+	
 	
 }
 
@@ -217,38 +219,7 @@ void APortalProjectCharacter::RightClickPortal(const FInputActionValue& Value)
 // 라인트레이스를 사용하여 오브젝트 구분하는 함수 구현
 void APortalProjectCharacter::CheckObject()
 {
-	// 플레이어 컨트롤러를 설정
-	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this, 0);
-	if(PlayerController)
-	{
-		auto PCM = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
-		//auto PCM2 = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 1);
-		FHitResult HitInfo;
-		// 카메라의 위치를 시작지점
-		FVector StartPoint = PCM->GetCameraLocation();
-		// 카메라의 시작지점에서 카메라의 회전 백터에 힘 150을 더하여 끝지점을 정한다.
-		FVector EndPoint = StartPoint + PlayerController->GetControlRotation().Vector() * 150;
-		FCollisionQueryParams Params;
-		// 자신은 콜리전 무시
-		Params.AddIgnoredActor(this);
-		bool bHit = GetWorld()->LineTraceSingleByChannel(HitInfo,StartPoint,EndPoint,ECC_Visibility,Params);
-		if(bHit)
-		{
-			// 충돌한 물체를 판단해서
-			AActor* HitActor = HitInfo.GetActor();
-			if(HitActor)
-			{
-				isTakeCube = true;
-				auto Object = Cast<IInteractable>(HitActor);
-				Object->Interact_Implementation();
-			}
-		}
-		else
-		{
-			 // isPushButton = false;
-			 isTakeCube = false;
-		}
-	}	
+	ServerRPC_CheckObj();
 }
 //=================================================================================================================================	
 
@@ -261,25 +232,47 @@ void APortalProjectCharacter::PushButton()
 
 
 
-void APortalProjectCharacter::RemovePortal(EPortalType OldPortalType)
-{
-	// 월드에 있는 ABullet 을 모두 찾아본다.
-	for(TActorIterator<APortal_Bullet> It(GetWorld()); It; ++It)
-	{
-		APortal_Bullet* Portal = *It;
-		// 만약 포탈 타입이 같은것이 존재하면
-		if(Portal->Type == OldPortalType)
-		{
-			// 포탈을 지운다.
-			Portal->Destroy();
-			//UE_LOG(LogTemp,Warning,TEXT("RemovePortal"));
-		}
-	}
-}
-
 void APortalProjectCharacter::MultiRPC_CheckObj_Implementation()
 {
 	
+	
+}
+
+
+void APortalProjectCharacter::ServerRPC_CheckObj_Implementation()
+{
+
+	//UE_LOG(LogTemp,Warning,TEXT("dfasdfafafafdafsafasf"));
+	// 플레이어 컨트롤러를 설정
+	//APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this, 1);
+	APlayerController* pc = Cast<APlayerController>(Controller);
+	if(pc)
+	{
+		
+		//auto PCM = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
+		//auto PCM2 = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 1);
+		FHitResult HitInfo;
+		// 카메라의 위치를 시작지점
+		FVector StartPoint = CameraComp->GetComponentLocation();
+		// 카메라의 시작지점에서 카메라의 회전 백터에 힘 150을 더하여 끝지점을 정한다.
+		FVector EndPoint = StartPoint + pc->GetControlRotation().Vector() * 150;
+		FCollisionQueryParams Params;
+		// 자신은 콜리전 무시
+		Params.AddIgnoredActor(this);
+		bool bHit = GetWorld()->LineTraceSingleByChannel(HitInfo,StartPoint,EndPoint,ECC_Visibility,Params);
+		DrawDebugLine(GetWorld(),StartPoint,EndPoint,FColor::Green,false,1,0,0);
+		if(bHit)
+		{
+			UE_LOG(LogTemp,Warning,TEXT("dfasdfafafafdafsafasf"));
+			// 충돌한 물체를 판단해서
+			AActor* HitActor = HitInfo.GetActor();
+			if(IInteractable* InteractActor = Cast<IInteractable>(HitActor))
+			{
+				isTakeCube = true;
+				InteractActor->Interact(this);
+			}
+		}
+	}	
 }
 
 
@@ -321,7 +314,6 @@ void APortalProjectCharacter::MultiRPC_LeftClick_Implementation()
 				}
 			}
 		}
-		
 	}
 }
 
@@ -367,72 +359,15 @@ void APortalProjectCharacter::MultiRPC_RightClick_Implementation()
 }
 
 
-void APortalProjectCharacter::ServerRPC_PickupCube_Implementation()
-{
-
-	// UE_LOG(LogTemp,Warning,TEXT("ServerRPC_PickupCube!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"));
-	// // 필요 속성 : 큐브 여부, 큐브와의 거리
-	// TArray<AActor*> AllActors;
-	// UGameplayStatics::GetAllActorsOfClass(GetWorld(),AActor::StaticClass(),AllActors);
-	//
-	// for(auto TempCube : AllActors)
-	// {
-	// 	//UE_LOG(LogTemp,Warning,TEXT("@@@@@@@@@@@@@@@@@@@@@@@@@@@@"));
-	// 	if(TempCube->GetName().Contains("BP_PortalCube") == false)
-	// 	{
-	// 		continue;
-	// 	}
-	// 	if(isTakeCube == false)
-	// 	{
-	// 		continue;
-	// 	}
-	// 	UE_LOG(LogTemp,Warning,TEXT("TakeCube!!!!!!!!!!!!!!!!!!!!!!!!!"));
-	// 	bHasCube = true;
-	// 	OwnedCube = TempCube;
-	// 	OwnedCube->SetOwner(this);
-	// 	MultiRPC_PickupCube(OwnedCube);
-	// 	break;
-	// }
-}
-
-
-void APortalProjectCharacter::MultiRPC_PickupCube_Implementation(AActor* Cube)
-{
-	//AttachCube(Cube);
-}
-
-void APortalProjectCharacter::ServerPRC_ReleaseCube_Implementation()
-{
-	// if(OwnedCube)
-	// {
-	// 	MultiRPC_ReleaseCube(OwnedCube);
-	// 	bHasCube = false;
-	// 	OwnedCube->SetOwner(nullptr);
-	// 	OwnedCube = nullptr;
-	// 	
-	// }
-	
-}
-
-
-//=================================================================================================================================	
-
-
-void APortalProjectCharacter::MultiRPC_ReleaseCube_Implementation(AActor* Cube)
-{
-	//DetachCube(Cube);
-}
-
-
-
 
 void APortalProjectCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(APortalProjectCharacter, bHasCube);
+	DOREPLIFETIME(APortalProjectCharacter,isTakeCube);
+	//DOREPLIFETIME(APortalProjectCharacter,AttachComp);
 	
 	
-
 }
 
 //=========================================================================================================================================
