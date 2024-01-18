@@ -40,12 +40,15 @@ public:
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Bullet")
 	UProjectileMovementComponent* ProjectileMovementComp;
 
+	UPROPERTY()
 	APortal_PortalManager* PortalManager;
 	
 public:
-	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="BulletTypeSettings")
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly, Category="BulletTypeSettings")
 	EPortalType Type;
 
 	UFUNCTION()
 	void OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&) const override;
 };

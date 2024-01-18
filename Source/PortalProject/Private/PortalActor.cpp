@@ -4,6 +4,7 @@
 #include "PortalActor.h"
 
 #include "Blueprint/WidgetLayoutLibrary.h"
+#include "Camera/CameraComponent.h"
 #include "Components/ArrowComponent.h"
 #include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -14,7 +15,10 @@
 #include "Kismet/KismetMaterialLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetRenderingLibrary.h"
+#include "Net/UnrealNetwork.h"
 #include "Object/Portal_PortalManager.h"
+#include "PortalProject/PortalProjectCharacter.h"
+#include "PortalProject/PortalProjectPlayerController.h"
 
 // Sets default values
 APortalActor::APortalActor()
@@ -27,7 +31,12 @@ APortalActor::APortalActor()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
+	
+	// Set up replication.
+	bReplicates = true;
+	SetReplicateMovement(true);
+	bAlwaysRelevant = true;
+	
 	// Set up attachments.
 	SetRootComponent(RootComp);
 	PortalPlane->SetupAttachment(RootComponent);
@@ -43,6 +52,8 @@ APortalActor::APortalActor()
 	PortalPlane->bAffectDistanceFieldLighting = false;
 	PortalPlane->bAffectDynamicIndirectLighting = false;
 	PortalPlane->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	PortalEdgeMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	
 	// Set up the scene capture 2D.
 	PortalCamera->bOverride_CustomNearClippingPlane = true;
@@ -54,11 +65,14 @@ APortalActor::APortalActor()
 	PortalCamera->bCaptureEveryFrame = false;
 	PortalCamera->bCaptureOnMovement = false;
 	PortalCamera->bAlwaysPersistRenderingState = true;
+	
+	
 }
 
 // Called when the game starts or when spawned
 void APortalActor::BeginPlay()
 {
+	PRINTLOG(TEXT("BEGIN Owner: %s"), GetOwner() ? *GetOwner()->GetActorNameOrLabel(): TEXT("None"))
 	Super::BeginPlay();
 
 	World = GetWorld();
@@ -72,17 +86,25 @@ void APortalActor::BeginPlay()
 	PortalPlane->SetMaterial(0, PortalMat);
 
 	const FVector2D ViewPortSize = UWidgetLayoutLibrary::GetViewportSize(World);
-	PortalRenderTarget = UKismetRenderingLibrary::CreateRenderTarget2D(World, (int32)ViewPortSize.X * 2,
-		(int32)ViewPortSize.Y * 2);
-	PortalRenderTarget->bAutoGenerateMips = true;
+	PortalRenderTarget = UKismetRenderingLibrary::CreateRenderTarget2D(World, (int32)ViewPortSize.X, (int32)ViewPortSize.Y);
+	PortalRenderTarget->bAutoGenerateMips = false;
 	PortalMat->SetTextureParameterValue(TEXT("Texture"), PortalRenderTarget);
 
 	// Set edge mesh.
 	UMaterialInstanceDynamic* EdgeMeshMat = UKismetMaterialLibrary::CreateDynamicMaterialInstance(World, PortalEdgeMesh->GetMaterial(0));
 	EdgeMeshMat->SetVectorParameterValue(TEXT("PortalColor"), *PortalColorMap.Find(Type));
 	PortalEdgeMesh->SetMaterial(0, EdgeMeshMat);
+
+	APortalProjectPlayerController* PPPC = Cast<APortalProjectPlayerController>(
+		UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	if (PPPC)
+	{
+		PortalCamera->bUseCustomProjectionMatrix = true;
+		PortalCamera->CustomProjectionMatrix = PPPC->GetCameraProjectionMatrix();	
+	}
 	
 	LinkWithOtherPortal();
+	PRINTLOG(TEXT("END Owner: %s"), GetOwner() ? *GetOwner()->GetActorNameOrLabel(): TEXT("None"))
 }
 
 // Called every frame
@@ -127,6 +149,12 @@ void APortalActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	}
 }
 
+void APortalActor::OnRep_LinkedPortal()
+{
+	PRINTLOG(TEXT("LinkedPortalRepped"))
+	LinkWithOtherPortal();
+}
+
 void APortalActor::LinkWithOtherPortal()
 {
 	if (!LinkedPortal)
@@ -137,6 +165,12 @@ void APortalActor::LinkWithOtherPortal()
 	LinkedPortal->PortalCamera->TextureTarget = PortalRenderTarget;
 
 	SetClipPlanes();
+
+	if (!PortalMat)
+	{
+		return;
+	}
+	
 	const FVector OffDist = ForwardDirection->GetForwardVector() * OffsetAmount;
 	const FLinearColor OffsetDist = FLinearColor(OffDist.X, OffDist.Y, OffDist.Z, 0.f);
 	PortalMat->SetVectorParameterValue(TEXT("OffsetDistance"), OffsetDist);
@@ -296,11 +330,25 @@ void APortalActor::CheckIfShouldTeleport()
 	if (OverlappingActors[0])
 	{
 		//UE_LOG(LogTemp, Warning, TEXT("%s"), *OverlappingActors[0]->GetActorNameOrLabel())
-		bool bCross = CheckIfPointCrossingPortal(OverlappingActors[0]->GetActorLocation(), GetActorLocation(), ForwardDirection->GetForwardVector());
+		FVector ActorLoc;
+		if (APortalProjectCharacter* Chara = Cast<APortalProjectCharacter>(OverlappingActors[0]))
+		{
+			ActorLoc = Chara->CameraComp->GetComponentLocation();
+		}
+		else
+		{
+			ActorLoc = OverlappingActors[0]->GetActorLocation();
+		}
+		
+		bool bCross = CheckIfPointCrossingPortal(ActorLoc, PortalPlane->GetComponentLocation(), ForwardDirection->GetForwardVector());
 		if (bCross)
 		{
 			// TODO: Teleport the objects too
-			TeleportChar();
+			ACharacter* Char = Cast<ACharacter>(OverlappingActors[0]);
+			if (Char)
+			{
+				TeleportChar(Char);
+			}
 		}
 	}
 }
@@ -324,27 +372,45 @@ bool APortalActor::CheckIfPointCrossingPortal(const FVector& Point, const FVecto
 	return bInCrossing;
 }
 
-void APortalActor::TeleportChar()
+void APortalActor::ServerRPC_TeleportChar_Implementation(ACharacter* Char)
+{
+	TeleportChar(Char);
+}
+
+void APortalActor::TeleportChar(ACharacter* Char)
 {
 	// Teleport the character.
-	ACharacter* PC = UGameplayStatics::GetPlayerCharacter(World, 0);
-	PC->SetActorLocationAndRotation(UpdateLocation(PC->GetActorLocation()) + LinkedPortal->ForwardDirection->GetForwardVector() * 1, UpdateRotation(PC->GetActorRotation()));
+	//ACharacter* PC = UGameplayStatics::GetPlayerCharacter(World, 0);
+	Char->SetActorLocationAndRotation(UpdateLocation(Char->GetActorLocation()), UpdateRotation(Char->GetActorRotation()));
 
 	// Set the new control rotation.
-	APlayerController* Cont = UGameplayStatics::GetPlayerController(World, 0);
-	Cont->SetControlRotation(UpdateRotation(Cont->GetControlRotation()));
+	APlayerController* Cont = Cast<APlayerController>(Char->GetController());
+	if (Cont)
+	{
+		Cont->SetControlRotation(UpdateRotation(Cont->GetControlRotation()));
+		FRotator InitialRot = Cont->GetControlRotation();
+		Cont->SetControlRotation(FRotator(InitialRot.Pitch, InitialRot.Yaw, 0));
+
+	}
 
 	// Update the velocity.
-	PC->GetMovementComponent()->Velocity = UpdateVelocity(PC->GetMovementComponent()->Velocity);
-	PC->GetMovementComponent()->UpdateComponentVelocity();
+	Char->GetMovementComponent()->Velocity = UpdateVelocity(Char->GetMovementComponent()->Velocity);
+	Char->GetMovementComponent()->UpdateComponentVelocity();
 
 	// TODO: Smooth Orientation
 	// Orient the player.
-	FRotator InitialRot = Cont->GetControlRotation();
-	Cont->SetControlRotation(FRotator(InitialRot.Pitch, InitialRot.Yaw, 0));
-	PC->GetCapsuleComponent()->SetWorldRotation(FRotator::ZeroRotator);
+	Char->GetCapsuleComponent()->SetWorldRotation(FRotator::ZeroRotator);
 
 	// Cut this frame
-	UGameplayStatics::GetPlayerCameraManager(World, 0)->bGameCameraCutThisFrame = true;
+	//UGameplayStatics::GetPlayerCameraManager(World, 0)->SetGameCameraCutThisFrame();
+	//PortalCamera->bCameraCutThisFrame = true;
+}
+
+void APortalActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(APortalActor, LinkedPortal);
+	DOREPLIFETIME(APortalActor, Type);
 }
 

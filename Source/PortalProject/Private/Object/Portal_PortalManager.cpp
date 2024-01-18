@@ -4,6 +4,7 @@
 #include "Object/Portal_PortalManager.h"
 #include "PortalActor.h"
 #include "Kismet/GameplayStatics.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 APortal_PortalManager::APortal_PortalManager()
@@ -19,7 +20,9 @@ APortal_PortalManager::APortal_PortalManager()
 	{
 		PortalClass = PortalBPFinder.Class;
 	}
-	
+
+	bReplicates = true;
+	bAlwaysRelevant = true;
 }
 
 // Called when the game starts or when spawned
@@ -30,14 +33,7 @@ void APortal_PortalManager::BeginPlay()
 	check(PortalClass);
 }
 
-// Called every frame
-void APortal_PortalManager::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
-
-void APortal_PortalManager::RequestPortal(EPortalType Type, const FTransform& Transform)
+void APortal_PortalManager::RequestPortal_Implementation(EPortalType Type, const FTransform& Transform, APawn* PortalOwner)
 {
 	FTransform PortalSpawnTransform = FTransform(Transform.GetRotation(), Transform.GetTranslation(), FVector::OneVector);
 
@@ -49,7 +45,7 @@ void APortal_PortalManager::RequestPortal(EPortalType Type, const FTransform& Tr
 			BluePortal = nullptr;
 		}
 
-		BluePortal = GetWorld()->SpawnActorDeferred<APortalActor>(PortalClass, PortalSpawnTransform);
+		BluePortal = GetWorld()->SpawnActorDeferred<APortalActor>(PortalClass, PortalSpawnTransform, PortalOwner);
 		BluePortal->Type = Type;
 		UGameplayStatics::FinishSpawningActor(BluePortal, PortalSpawnTransform);
 
@@ -69,7 +65,7 @@ void APortal_PortalManager::RequestPortal(EPortalType Type, const FTransform& Tr
 			PurplePortal = nullptr;
 		}
 
-		PurplePortal = GetWorld()->SpawnActorDeferred<APortalActor>(PortalClass, PortalSpawnTransform);
+		PurplePortal = GetWorld()->SpawnActorDeferred<APortalActor>(PortalClass, PortalSpawnTransform, PortalOwner);
 		PurplePortal->Type = Type;
 		UGameplayStatics::FinishSpawningActor(PurplePortal, PortalSpawnTransform);
 
@@ -83,9 +79,53 @@ void APortal_PortalManager::RequestPortal(EPortalType Type, const FTransform& Tr
 
 		break;
 	case EPortalType::Player2Orange:
+		if (OrangePortal)
+		{
+			OrangePortal->Destroy();
+			OrangePortal = nullptr;
+		}
+
+		OrangePortal = GetWorld()->SpawnActorDeferred<APortalActor>(PortalClass, PortalSpawnTransform, PortalOwner);
+		OrangePortal->Type = Type;
+		UGameplayStatics::FinishSpawningActor(OrangePortal, PortalSpawnTransform);
+
+		if (RedPortal)
+		{
+			OrangePortal->LinkedPortal = RedPortal;
+			OrangePortal->LinkWithOtherPortal();
+			RedPortal->LinkedPortal = OrangePortal;
+			RedPortal->LinkWithOtherPortal();
+		}
 		break;
 	case EPortalType::Player2Red:
+		if (RedPortal)
+		{
+			RedPortal->Destroy();
+			RedPortal = nullptr;
+		}
+
+		RedPortal = GetWorld()->SpawnActorDeferred<APortalActor>(PortalClass, PortalSpawnTransform, PortalOwner);
+		RedPortal->Type = Type;
+		UGameplayStatics::FinishSpawningActor(RedPortal, PortalSpawnTransform);
+
+		if (OrangePortal)
+		{
+			RedPortal->LinkedPortal = OrangePortal;
+			RedPortal->LinkWithOtherPortal();
+			OrangePortal->LinkedPortal = RedPortal;
+			OrangePortal->LinkWithOtherPortal();
+		}
 		break;
 	}
+}
+
+void APortal_PortalManager::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(APortal_PortalManager, OrangePortal);
+	DOREPLIFETIME(APortal_PortalManager, BluePortal);
+	DOREPLIFETIME(APortal_PortalManager, RedPortal);
+	DOREPLIFETIME(APortal_PortalManager, PurplePortal);
 }
 

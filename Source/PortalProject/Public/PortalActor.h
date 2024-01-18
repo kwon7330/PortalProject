@@ -38,11 +38,14 @@ public:
 	UPROPERTY()
 	APortal_PortalManager* PortalManager;
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite)
 	EPortalType Type;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Portal|Variables")
+	UPROPERTY(ReplicatedUsing = "OnRep_LinkedPortal", EditAnywhere, BlueprintReadWrite, Category = "Portal|Variables")
 	APortalActor* LinkedPortal;
+
+	UFUNCTION()
+	void OnRep_LinkedPortal();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Portal|Settings")
 	float OffsetAmount {-4.f};
@@ -51,7 +54,7 @@ public:
 	int32 CurrentRecursion {0};
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Portal|Settings")
-	int32 MaxRecursions {3};
+	int32 MaxRecursions {2};
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Portal|Components")
 	USceneComponent* RootComp;
@@ -101,5 +104,12 @@ public:
 	void CheckViewportSize();
 	void CheckIfShouldTeleport();
 	bool CheckIfPointCrossingPortal(const FVector& Point, const FVector& PortalLocation, const FVector& PortalNormal);
-	void TeleportChar();
+
+	UFUNCTION(Server, Reliable)
+	void ServerRPC_TeleportChar(ACharacter* Char);
+	
+	void TeleportChar(ACharacter* Char);
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&) const override;
+
 };

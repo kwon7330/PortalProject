@@ -16,7 +16,6 @@
 #include "Engine/LocalPlayer.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "Layers/LayersSubsystem.h"
 #include "Net/UnrealNetwork.h"
 #include "Object/Portal_Bullet.h"
 #include "Object/Portal_Cube.h"
@@ -34,15 +33,13 @@ DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
 APortalProjectCharacter::APortalProjectCharacter()
 {
-	// Character doesnt have a rifle at start
-	bHasRifle = false;
-	
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(55.f, 96.0f);
 		
 	// Create a CameraComponent
 	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComp"));
-	CameraComp->SetupAttachment(GetMesh());
+	CameraComp->SetupAttachment(RootComponent);
+	
 	//(X=26.000000,Y=0.000000,Z=75.000000)
 	CameraComp->SetRelativeLocation(FVector(26.0f, 0.f, 75.f));
 	CameraComp->bUsePawnControlRotation = true;
@@ -98,15 +95,6 @@ void APortalProjectCharacter::BeginPlay()
 	checkf(PlayerUIClass, TEXT("Player UI 클래스가 지정되지 않음"));
 	PlayerUI = CreateWidget<UPlayerUI>(GetWorld(), PlayerUIClass);
 	PlayerUI->AddToViewport();
-}
-
-void APortalProjectCharacter::SetHasRifle(bool bNewHasRifle)
-{
-}
-
-bool APortalProjectCharacter::GetHasRifle()
-{
-	return bHasRifle;
 }
 
 //////////////////////////////////////////////////////////////////////////// Input
@@ -202,14 +190,74 @@ void APortalProjectCharacter::ReleaseCube()
 
 void APortalProjectCharacter::LeftClickPortal(const FInputActionValue& Value)
 {
-	ServerRPC_LeftClick();
+	// 만약 컴퍼넌트의 주인이 플레이어 1 이라면 파란 색 포탈을 생성하고, 주인이 플레이어 2라면 주황색 포탈을 생성한다.
+	// 큐브를 들고있으면 총을 쏘지 못한다.
+	if(bHasCube == false)
+	{
+		ServerRPC_LeftClick();
+		return;
+		
+		APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this,0);
+		if(PlayerController != nullptr)
+		{
+			auto PCM = UGameplayStatics::GetPlayerCameraManager(GetWorld(),0);
+			FHitResult HitInfo;
+			FVector StartPoint = PCM->GetCameraLocation();
+			FVector EndPoint = StartPoint + PlayerController->GetControlRotation().Vector() * 10000;
+			FCollisionQueryParams Params;
+			Params.AddIgnoredActor(this);
+			bool bHit = GetWorld()->LineTraceSingleByChannel(HitInfo,StartPoint,EndPoint,ECC_Visibility,Params);
+			DrawDebugLine(GetWorld(), StartPoint, EndPoint, FColor::Red, false, 2, 0, 1.0f);
+			if(bHit == true)
+			{
+				auto Tablets = Cast<APortal_Tablet>(HitInfo.GetActor());
+				if(Tablets != nullptr)
+				{
+					FTransform SpawnPoint = HitInfo.GetActor()->GetActorTransform();
+					APortal_Bullet* Bullet = GetWorld()->SpawnActorDeferred<APortal_Bullet>(BulletFactory,SpawnPoint);
+					Bullet->Type = EPortalType::Player1Blue;
+					UGameplayStatics::FinishSpawningActor(Bullet, SpawnPoint);
+				}
+			}
+		}
+		
+	}
 }
 
 void APortalProjectCharacter::RightClickPortal(const FInputActionValue& Value)
 {
-	
-	ServerRPC_RightClick();
-	
+	// 만약 컴퍼넌트의 주인이 플레이어 1 이라면 보라 색 포탈을 생성하고, 주인이 플레이어 2라면 붉은색 포탈을 생성한다.
+	// 큐브를 들고있으면 총을 쏘지 못한다.
+	if(bHasCube == false)
+	{
+		ServerRPC_RightClick();
+		return;
+		APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this,0);
+		if(PlayerController != nullptr)
+		{
+			auto PCM = UGameplayStatics::GetPlayerCameraManager(GetWorld(),0);
+			FHitResult HitInfo;
+			FVector StartPoint = PCM->GetCameraLocation();
+			FVector EndPoint = StartPoint + PlayerController->GetControlRotation().Vector() * 10000;
+			FCollisionQueryParams Params;
+			Params.AddIgnoredActor(this);
+			bool bHit = GetWorld()->LineTraceSingleByChannel(HitInfo,StartPoint,EndPoint,ECC_Visibility,Params);
+			DrawDebugLine(GetWorld(), StartPoint, EndPoint, FColor::Red, false, 5, 0, 1.0f);
+			if(bHit == true)
+			{
+				
+				auto Tablets = Cast<APortal_Tablet>(HitInfo.GetActor());
+				if(Tablets != nullptr)
+				{
+					FTransform SpawnPoint = HitInfo.GetActor()->GetActorTransform();
+					APortal_Bullet* Bullet = GetWorld()->SpawnActorDeferred<APortal_Bullet>(BulletFactory,SpawnPoint);
+					Bullet->Type = EPortalType::Player1Purple;
+					UGameplayStatics::FinishSpawningActor(Bullet, SpawnPoint);
+					
+				}
+			}
+		}
+	}
 }
 //=================================================================================================================================	
 
@@ -277,6 +325,48 @@ void APortalProjectCharacter::RemovePortal(EPortalType OldPortalType)
 	}
 }
 
+void APortalProjectCharacter::ShootBullet(bool bIsLeftClick)
+{
+	UE_LOG(LogTemp,Warning,TEXT("LeftClickShoot"));
+	//FTransform FirePoint = PortalGun->GetSocketTransform(FName("FirePoint"));
+
+	APlayerController* PC = Cast<APlayerController>(Controller);
+	check(PC);
+
+	FTransform FirePoint;
+	FirePoint.SetLocation(PortalGun->GetSocketLocation(FName("FirePoint")));
+	FirePoint.SetRotation(PC->GetControlRotation().Quaternion());
+	FirePoint.SetScale3D(FVector(0.1));
+	
+	APortal_Bullet* Bullet = GetWorld()->SpawnActorDeferred<APortal_Bullet>(BulletFactory, FirePoint, this, this);
+
+	switch(PlayerType)
+	{
+	case EPlayerType::PBody:
+		if (bIsLeftClick)
+		{
+			Bullet->Type = EPortalType::Player1Blue;	
+		}
+		else
+		{
+			Bullet->Type = EPortalType::Player1Purple;
+		}
+		break;
+	case EPlayerType::Atlas:
+		if (bIsLeftClick)
+		{
+			Bullet->Type = EPortalType::Player2Orange;	
+		}
+		else
+		{
+			Bullet->Type = EPortalType::Player2Red;
+		}
+		break;
+	}
+	
+	UGameplayStatics::FinishSpawningActor(Bullet, FirePoint);
+}
+
 void APortalProjectCharacter::MultiRPC_CheckObj_Implementation()
 {
 	
@@ -287,85 +377,13 @@ void APortalProjectCharacter::MultiRPC_CheckObj_Implementation()
 
 void APortalProjectCharacter::ServerRPC_LeftClick_Implementation()
 {
-	MultiRPC_LeftClick();
-}
-
-void APortalProjectCharacter::MultiRPC_LeftClick_Implementation()
-{
-	// 만약 컴퍼넌트의 주인이 플레이어 1 이라면 파란 색 포탈을 생성하고, 주인이 플레이어 2라면 주황색 포탈을 생성한다.
-	// 큐브를 들고있으면 총을 쏘지 못한다.
-	if(bHasCube == false)
-	{
-		//ServerRPC_LeftClick();
-		
-		APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this,0);
-		if(PlayerController != nullptr)
-		{
-			auto PCM = UGameplayStatics::GetPlayerCameraManager(GetWorld(),0);
-			FHitResult HitInfo;
-			FVector StartPoint = PCM->GetCameraLocation();
-			FVector EndPoint = StartPoint + PlayerController->GetControlRotation().Vector() * 10000;
-			FCollisionQueryParams Params;
-			Params.AddIgnoredActor(this);
-			bool bHit = GetWorld()->LineTraceSingleByChannel(HitInfo,StartPoint,EndPoint,ECC_Visibility,Params);
-			DrawDebugLine(GetWorld(), StartPoint, EndPoint, FColor::Red, false, 2, 0, 1.0f);
-			if(bHit == true)
-			{
-				auto Tablets = Cast<APortal_Tablet>(HitInfo.GetActor());
-				if(Tablets != nullptr)
-				{
-					FTransform SpawnPoint = HitInfo.GetActor()->GetActorTransform();
-					APortal_Bullet* Bullet = GetWorld()->SpawnActorDeferred<APortal_Bullet>(BulletFactory,SpawnPoint);
-					Bullet->Type = EPortalType::Player1Blue;
-					UGameplayStatics::FinishSpawningActor(Bullet, SpawnPoint);
-				}
-			}
-		}
-		
-	}
+	ShootBullet(true);
 }
 
 void APortalProjectCharacter::ServerRPC_RightClick_Implementation()
 {
-	MultiRPC_RightClick();
+	ShootBullet(false);
 }
-
-
-void APortalProjectCharacter::MultiRPC_RightClick_Implementation()
-{
-	// 만약 컴퍼넌트의 주인이 플레이어 1 이라면 보라 색 포탈을 생성하고, 주인이 플레이어 2라면 붉은색 포탈을 생성한다.
-	// 큐브를 들고있으면 총을 쏘지 못한다.
-	if(bHasCube == false)
-	{
-		//ServerRPC_RightClick();
-		APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this,0);
-		if(PlayerController != nullptr)
-		{
-			auto PCM = UGameplayStatics::GetPlayerCameraManager(GetWorld(),0);
-			FHitResult HitInfo;
-			FVector StartPoint = PCM->GetCameraLocation();
-			FVector EndPoint = StartPoint + PlayerController->GetControlRotation().Vector() * 10000;
-			FCollisionQueryParams Params;
-			Params.AddIgnoredActor(this);
-			bool bHit = GetWorld()->LineTraceSingleByChannel(HitInfo,StartPoint,EndPoint,ECC_Visibility,Params);
-			DrawDebugLine(GetWorld(), StartPoint, EndPoint, FColor::Red, false, 5, 0, 1.0f);
-			if(bHit == true)
-			{
-				
-				auto Tablets = Cast<APortal_Tablet>(HitInfo.GetActor());
-				if(Tablets != nullptr)
-				{
-					FTransform SpawnPoint = HitInfo.GetActor()->GetActorTransform();
-					APortal_Bullet* Bullet = GetWorld()->SpawnActorDeferred<APortal_Bullet>(BulletFactory,SpawnPoint);
-					Bullet->Type = EPortalType::Player1Purple;
-					UGameplayStatics::FinishSpawningActor(Bullet, SpawnPoint);
-					
-				}
-			}
-		}
-	}
-}
-
 
 void APortalProjectCharacter::ServerRPC_PickupCube_Implementation()
 {
@@ -430,9 +448,7 @@ void APortalProjectCharacter::GetLifetimeReplicatedProps(TArray<FLifetimePropert
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(APortalProjectCharacter, bHasCube);
-	
-	
-
+	DOREPLIFETIME(APortalProjectCharacter, PlayerType);
 }
 
 //=========================================================================================================================================

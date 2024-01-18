@@ -23,25 +23,23 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
-public:
-	UPROPERTY(EditAnywhere,Category="PortalManagerSettings")
+	UPROPERTY(Replicated, EditAnywhere, Category="PortalManager|Portals")
 	class APortalActor* BluePortal;
-	UPROPERTY(EditAnywhere,Category="PortalManagerSettings")
+	UPROPERTY(Replicated, EditAnywhere, Category="PortalManager|Portals")
 	APortalActor* PurplePortal;
-	UPROPERTY(EditAnywhere,Category="PortalManagerSettings")
+	UPROPERTY(Replicated, EditAnywhere, Category="PortalManager|Portals")
 	APortalActor* RedPortal;
-	UPROPERTY(EditAnywhere,Category="PortalManagerSettings")
+	UPROPERTY(Replicated, EditAnywhere, Category="PortalManager|Portals")
 	APortalActor* OrangePortal;
-
 	
-	UPROPERTY(EditAnywhere, Category = "Portal")
+	UPROPERTY(EditAnywhere, Category = "PortalManager|Setting")
 	TSubclassOf<class APortalActor> PortalClass;
-	
-	void RequestPortal(EPortalType Type, const FTransform& Transform);
 
+	UFUNCTION(Server, Reliable)
+	void RequestPortal(EPortalType Type, const FTransform& Transform, APawn* PortalOwner);
+	
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&) const override;
+	
 	/*TMap<EPortalType, APortal_PortalDemo*> PortalMap;*/
 	
 };
