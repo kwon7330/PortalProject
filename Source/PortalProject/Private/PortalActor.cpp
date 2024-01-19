@@ -330,14 +330,17 @@ void APortalActor::CheckIfShouldTeleport()
 	if (OverlappingActors[0])
 	{
 		//UE_LOG(LogTemp, Warning, TEXT("%s"), *OverlappingActors[0]->GetActorNameOrLabel())
-		FVector ActorLoc;
+		FVector ActorLoc = OverlappingActors[0]->GetActorLocation();
 		if (APortalProjectCharacter* Chara = Cast<APortalProjectCharacter>(OverlappingActors[0]))
 		{
+			bool bCross = CheckIfPointCrossingPortal(ActorLoc, PortalPlane->GetComponentLocation(), ForwardDirection->GetForwardVector());
+
+			if (bCross)
+			{
+				TeleportChar(Chara);
+			}
+			
 			ActorLoc = Chara->CameraComp->GetComponentLocation();
-		}
-		else
-		{
-			ActorLoc = OverlappingActors[0]->GetActorLocation();
 		}
 		
 		bool bCross = CheckIfPointCrossingPortal(ActorLoc, PortalPlane->GetComponentLocation(), ForwardDirection->GetForwardVector());
