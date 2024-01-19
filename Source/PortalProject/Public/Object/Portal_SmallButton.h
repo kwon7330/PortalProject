@@ -4,12 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Interactable.h"
 #include "Portal_SmallButton.generated.h"
 
+class APortal_Screen;
 class UCapsuleComponent;
 
 UCLASS()
-class PORTALPROJECT_API APortal_SmallButton : public AActor
+class PORTALPROJECT_API APortal_SmallButton : public AActor ,public IInteractable
 {
 	GENERATED_BODY()
 	
@@ -27,9 +29,19 @@ public:
 
 
 	UPROPERTY(EditAnywhere)
-	UCapsuleComponent* CapsuleComp;
+	UStaticMeshComponent* MeshComp;
 
-	//플레이어가 버튼을 눌렀을 때
-	UPROPERTY()
-	bool PushedButton = false;
+	UPROPERTY(EditAnywhere)
+	UStaticMeshComponent* ButtonComp;
+
+	UPROPERTY(EditAnywhere)
+	APortal_Screen* Screen;
+
+	
+
+	void TimeOver();
+
+public:
+	virtual void Interact(APortalProjectCharacter* Character) override;
+	
 };
