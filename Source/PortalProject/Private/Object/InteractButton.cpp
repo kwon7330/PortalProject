@@ -54,7 +54,7 @@ void AInteractButton::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor
 		{
 			UE_LOG(LogTemp,Warning,TEXT("isMovingFloor"));
 			ServerRPC_OnOverlap();
-			
+			//MovingFloor->ButtonInteract();
 		}
 	}
 }
@@ -66,16 +66,19 @@ void AInteractButton::EndOverlap(UPrimitiveComponent* OverlappedComponent, AActo
 	{
 		UE_LOG(LogTemp,Warning,TEXT("isMovingFloor"));
 		ServerRPC_EndOverlap();
+		//MovingFloor->Return();
 	}
+}
+
+
+
+void AInteractButton::ServerRPC_OnOverlap_Implementation()
+{
+	MovingFloor->MultiRPC_FloorAct();
 }
 
 void AInteractButton::ServerRPC_EndOverlap_Implementation()
 {
 	MovingFloor->MultiRPC_ReturnAct();
-}
-
-void AInteractButton::ServerRPC_OnOverlap_Implementation()
-{
-	MovingFloor->ButtonInteract();
 }
 

@@ -28,7 +28,7 @@ public:
 	UFUNCTION()
 	virtual void ButtonInteract() override;
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* MeshComp;
 
 	void FloorAct();
