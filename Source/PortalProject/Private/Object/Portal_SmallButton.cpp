@@ -41,29 +41,32 @@ void APortal_SmallButton::BeginPlay()
 void APortal_SmallButton::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 	
-
 }
 
-void APortal_SmallButton::TimeOver()
-{
-	Screen->SetActorEnableCollision(true);
-}
+
+
 
 void APortal_SmallButton::Interact(APortalProjectCharacter* Character)
 {
 	IInteractable::Interact(Character);
-	UE_LOG(LogTemp,Warning,TEXT("PushButton"));
-	auto Wall = Cast<APortal_Screen>(Screen);
-	if(Wall != nullptr)
+	if(Screen)
 	{
-		FTimerHandle TimerHandle;
-		
-		GetWorldTimerManager().SetTimer(TimerHandle,this,&APortal_SmallButton::TimeOver,3.0f,false);	
-		Wall->SetActorEnableCollision(false);
+		ServerRPC_ButtonInteract();
 	}
+	else UE_LOG(LogTemp,Warning,TEXT("nullptr"));
+	
+	
+	
 }
+
+void APortal_SmallButton::ServerRPC_ButtonInteract_Implementation()
+{
+	UE_LOG(LogTemp,Warning,TEXT("CallMoveScreen"));
+	Screen->ScreenMove();
+}
+
+
 
 
 

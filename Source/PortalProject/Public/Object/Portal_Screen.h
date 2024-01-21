@@ -25,4 +25,20 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	USkeletalMeshComponent* MeshComp;
+
+	UPROPERTY(EditAnywhere)
+	FRotator RotBase;
+
+	FRotator ActivatedRot;
+
+	UFUNCTION()
+	void ScreenMove();
+	void ResetScreen();
+
+	UFUNCTION(Server,Reliable)
+	void ServerRPC_ScreenMove();
+	UFUNCTION(NetMulticast,Unreliable)
+	void MultiRPC_ScreenMove();
+	UFUNCTION(NetMulticast,Unreliable)
+	void MultiRPC_ResetScreen();
 };

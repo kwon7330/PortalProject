@@ -37,11 +37,15 @@ public:
 	UPROPERTY(EditAnywhere)
 	APortal_Screen* Screen;
 
-	
+	float CurrentTime = 0;
+	float FixedTime = 3.0f;
 
-	void TimeOver();
+
 
 public:
 	virtual void Interact(APortalProjectCharacter* Character) override;
+
+	UFUNCTION(Server,Reliable)
+	void ServerRPC_ButtonInteract();
 	
 };

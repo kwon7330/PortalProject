@@ -124,28 +124,7 @@ void APortalProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 
 void APortalProjectCharacter::Pickup(const FInputActionValue& Value)
 {
-	//E 키를 눌렀을 때 
-	// if(isTakeCube == true && isPushButton == false)
-	// {
-	// 	// 큐브를 들고있다면
-	// 	if(bHasCube == true)
-	// 	{	UE_LOG(LogTemp,Warning,TEXT("bHasCubeTrue!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"));
-	//
-	// 		// 큐브를 놓고
-	// 		
-	// 	}
-	// 	// 큐브를 들고있지않다면 	
-	// 	else
-	// 	{
-	// 		UE_LOG(LogTemp,Warning,TEXT("bHasCubeFalse!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"));
-	// 		// 큐브를 든다.
-	// 		PickupCube();
-	// 	}
-	// }
-	// else if(isTakeCube == false && isPushButton == true)
-	// {
-	// 	PushButton();
-	// }
+	
 	CheckObject();
 }
 
@@ -244,7 +223,7 @@ void APortalProjectCharacter::RightClickPortal(const FInputActionValue& Value)
 		}
 	}
 }
-//=================================================================================================================================	
+
 
 
 // 라인트레이스를 사용하여 오브젝트 구분하는 함수 구현
@@ -252,32 +231,14 @@ void APortalProjectCharacter::CheckObject()
 {
 	ServerRPC_CheckObject();
 }
-//=================================================================================================================================	
+
 
 void APortalProjectCharacter::PushButton()
 {
 	UE_LOG(LogTemp,Warning,TEXT("PushButton"));
 	
 }
-//=================================================================================================================================	
-
-
-
-void APortalProjectCharacter::RemovePortal(EPortalType OldPortalType)
-{
-	// 월드에 있는 ABullet 을 모두 찾아본다.
-	for(TActorIterator<APortal_Bullet> It(GetWorld()); It; ++It)
-	{
-		APortal_Bullet* Portal = *It;
-		// 만약 포탈 타입이 같은것이 존재하면
-		if(Portal->Type == OldPortalType)
-		{
-			// 포탈을 지운다.
-			Portal->Destroy();
-			//UE_LOG(LogTemp,Warning,TEXT("RemovePortal"));
-		}
-	}
-}
+	
 
 void APortalProjectCharacter::ServerRPC_CheckObject_Implementation()
 {
@@ -285,8 +246,7 @@ void APortalProjectCharacter::ServerRPC_CheckObject_Implementation()
 	APlayerController* pc = Cast<APlayerController>(Controller);
 	if(pc)
 	{
-		//auto PCM = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
-		//auto PCM2 = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 1);
+		
 		FHitResult HitInfo;
 		// 카메라의 위치를 시작지점
 		FVector StartPoint = CameraComp->GetComponentLocation();
@@ -315,9 +275,7 @@ void APortalProjectCharacter::ServerRPC_CheckObject_Implementation()
 
 void APortalProjectCharacter::ShootBullet(bool bIsLeftClick)
 {
-	UE_LOG(LogTemp,Warning,TEXT("LeftClickShoot"));
-	//FTransform FirePoint = PortalGun->GetSocketTransform(FName("FirePoint"));
-
+	
 	APlayerController* PC = Cast<APlayerController>(Controller);
 	check(PC);
 
@@ -357,7 +315,7 @@ void APortalProjectCharacter::ShootBullet(bool bIsLeftClick)
 
 
 
-//=================================================================================================================================	
+
 
 void APortalProjectCharacter::ServerRPC_LeftClick_Implementation()
 {
@@ -372,19 +330,6 @@ void APortalProjectCharacter::ServerRPC_RightClick_Implementation()
 
 
 
-
-
-
-
-
-//=================================================================================================================================	
-
-
-
-
-
-
-
 void APortalProjectCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -392,14 +337,13 @@ void APortalProjectCharacter::GetLifetimeReplicatedProps(TArray<FLifetimePropert
 	DOREPLIFETIME(APortalProjectCharacter, PlayerType);
 }
 
-//=========================================================================================================================================
+
 
 
 
 void APortalProjectCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	//CheckObject();
 }
 
-//=================================================================================================================================	
+
