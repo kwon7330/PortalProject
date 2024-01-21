@@ -25,4 +25,5 @@ class PORTALPROJECT_API IInteractable
 	
 public:
 	virtual void Interact(APortalProjectCharacter* Character);
+	virtual void ButtonInteract();
 };
