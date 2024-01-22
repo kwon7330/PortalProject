@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "BallNest.generated.h"
 
+class ACircleDoor;
 class ASphereBall;
 class UBoxComponent;
 
@@ -32,8 +33,10 @@ public:
 	UPROPERTY(EditAnywhere)
 	UBoxComponent* Trigger;
 
+	
+
 	UPROPERTY(EditAnywhere)
-	ASphereBall* Ball;
+	ACircleDoor* CircleDoor;
 	
 	UFUNCTION()
 	void OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);

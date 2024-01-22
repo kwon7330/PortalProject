@@ -4,6 +4,8 @@
 #include "Object/BallNest.h"
 
 #include "Components/BoxComponent.h"
+#include "Object/CircleDoor.h"
+#include "Object/SphereBall.h"
 
 
 ABallNest::ABallNest()
@@ -42,15 +44,20 @@ void ABallNest::Tick(float DeltaTime)
 void ABallNest::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if(Ball)
+	auto Sphere = Cast<ASphereBall>(OtherActor);
+	if(Sphere)
 	{
-		
+		CircleDoor->DoorOpen();
 	}
 }
 
 void ABallNest::EndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	int32 OtherBodyIndex)
 {
-	
+	auto Sphere = Cast<ASphereBall>(OtherActor);
+	if(Sphere)
+	{
+		CircleDoor->DoorClose();
+	}
 }
 

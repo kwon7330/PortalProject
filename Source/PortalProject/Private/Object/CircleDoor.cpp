@@ -3,6 +3,8 @@
 
 #include "Object/CircleDoor.h"
 
+#include "CircleDoorAnim.h"
+
 
 ACircleDoor::ACircleDoor()
 {
@@ -30,5 +32,19 @@ void ACircleDoor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+
+void ACircleDoor::DoorOpen()
+{
+	UE_LOG(LogTemp,Warning,TEXT("DoorOpen"));
+	MeshComp->PlayAnimation(OpenDoorAnim,true);
+}
+
+
+void ACircleDoor::DoorClose()
+{
+	UE_LOG(LogTemp,Warning,TEXT("DoorClose"));
+	MeshComp->PlayAnimation(CloseDoorAnim,true);
 }
 
