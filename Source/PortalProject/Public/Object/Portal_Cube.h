@@ -4,13 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "Interactable.h"
+#include "PortalableObject.h"
 #include "GameFramework/Actor.h"
 #include "Portal_Cube.generated.h"
 
 class APortalProjectCharacter;
 
 UCLASS()
-class PORTALPROJECT_API APortal_Cube : public AActor, public IInteractable
+class PORTALPROJECT_API APortal_Cube : public AActor, public IInteractable, public IPortalableObject
 {
 	GENERATED_BODY()
 	

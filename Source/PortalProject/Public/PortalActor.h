@@ -32,9 +32,6 @@ protected:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 public:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Portal|Settings")
-	TSubclassOf<AActor> PortalableActorSubclassOf;
-	
 	UPROPERTY()
 	APortal_PortalManager* PortalManager;
 	
@@ -54,10 +51,13 @@ public:
 	int32 CurrentRecursion {0};
 
 	UPROPERTY(VisibleAnywhere)
-	TSet<AActor*> RecentlyTeleported;
+	TMap<AActor*, float> RecentlyTeleported;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Portal|Settings")
 	float TeleportCooldown {0.15f};
+
+	UFUNCTION()
+	void TickRecentlyTeleported(float DeltaTime);
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Portal|Settings")
 	int32 MaxRecursions {2};
@@ -84,7 +84,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	class USceneCaptureComponent2D* PortalCamera;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Portal|Settings")
 	class UMaterialInterface* PortalBaseMat;
 
 	UPROPERTY(VisibleAnywhere, Category = "Portal|Mat")
@@ -92,16 +92,43 @@ public:
 
 	UPROPERTY(VisibleAnywhere, Category = "Portal|Mat")
 	class UTextureRenderTarget2D* PortalRenderTarget;
+
+	UPROPERTY(VisibleAnywhere, Category = "Portal|Mat")
+	class UNiagaraComponent* PortalVfxComp;
+
+	UPROPERTY(VisibleAnywhere, Category = "Portal")
+	UBoxComponent* BacksideDetection;
+	
+	UPROPERTY(VisibleAnywhere, Category = "Portal")
+	UBoxComponent* PlaneBox;
+
+	UPROPERTY(VisibleAnywhere)
+	TArray<AActor*> CollisionIgnoreActors;
 	
 	UPROPERTY()
 	FVector LastPosition;
-
+	
 	UPROPERTY()
 	bool bLastInFront;
 	
 	UPROPERTY()
 	UWorld* World;
 
+	UFUNCTION()
+	void OnPlaneBoxBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+	void OnPlaneBoxEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	UPROPERTY(VisibleAnywhere)
+	TArray<AActor*> DetectedActors;
+	
+	UFUNCTION()
+	void OnActorDetectionBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+	void OnActorDetectionEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	
 	void LinkWithOtherPortal();
 	void UnlinkPortal();
 	

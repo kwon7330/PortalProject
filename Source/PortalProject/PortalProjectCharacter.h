@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "InputActionValue.h"
 #include "Interactable.h"
+#include "PortalableObject.h"
 #include "PortalProject.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
@@ -27,7 +28,7 @@ struct FInputActionValue;
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
 UCLASS(config=Game)
-class APortalProjectCharacter : public ACharacter, public IInteractable
+class APortalProjectCharacter : public ACharacter, public IInteractable, public IPortalableObject
 {
 	GENERATED_BODY()
 
@@ -163,12 +164,7 @@ public:
 
 	// 버튼을 누르는 함수
 	void PushButton();
-
-//=================================================================================================================================	
-
-	void RemovePortal(EPortalType OldPortalType);
 	
-
 //=================================================================================================================================	
 
 	// 네트워크
