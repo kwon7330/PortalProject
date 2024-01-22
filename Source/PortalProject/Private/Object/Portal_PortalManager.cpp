@@ -65,6 +65,9 @@ void APortal_PortalManager::SpawnPortal(APortalActor** OutPointer, APortalActor*
 		(*OppositePointer)->LinkedPortal = *OutPointer;
 		(*OppositePointer)->LinkWithOtherPortal();
 	}
+
+	OnPortalCreated.Broadcast(InType);
+	BroadcastPortalCreated(InType);
 }
 
 void APortal_PortalManager::RequestPortal_Implementation(EPortalType Type, class APortal_Tablet* Tablet, APawn* PortalOwner)
@@ -122,6 +125,16 @@ void APortal_PortalManager::OnPlayerFizzled(EPlayerType Player)
 		}
 		break;
 	}
+}
+
+void APortal_PortalManager::BroadcastPortalCreated_Implementation(EPortalType Type)
+{
+	OnPortalCreated.Broadcast(Type);
+}
+
+void APortal_PortalManager::BroadcastPortalDeleted_Implementation(EPortalType Type)
+{
+	OnPortalDestroyed.Broadcast(Type);
 }
 
 void APortal_PortalManager::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

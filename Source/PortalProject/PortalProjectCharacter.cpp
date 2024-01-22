@@ -19,6 +19,7 @@
 #include "Net/UnrealNetwork.h"
 #include "Object/Portal_Bullet.h"
 #include "Object/Portal_Cube.h"
+#include "Object/Portal_PortalManager.h"
 #include "Object/Portal_SmallButton.h"
 #include "Object/Portal_Tablet.h"
 
@@ -92,9 +93,21 @@ void APortalProjectCharacter::BeginPlay()
 	}
 
 	// Create UI
-	checkf(PlayerUIClass, TEXT("Player UI 클래스가 지정되지 않음"));
-	PlayerUI = CreateWidget<UPlayerUI>(GetWorld(), PlayerUIClass);
-	PlayerUI->AddToViewport();
+
+	if (IsLocallyControlled())
+	{
+		checkf(PlayerUIClass, TEXT("Player UI 클래스가 지정되지 않음"));
+		PlayerUI = CreateWidget<UPlayerUI>(GetWorld(), PlayerUIClass);
+		PlayerUI->AddToViewport();	
+	}
+	
+	APortal_PortalManager* PM = Cast<APortal_PortalManager>(UGameplayStatics::GetActorOfClass(GetWorld(), APortal_PortalManager::StaticClass()));
+	if (PM && IsLocallyControlled())
+	{
+		PRINTLOG(TEXT("FOUND"))
+		PM->OnPortalCreated.AddDynamic(this, &APortalProjectCharacter::OnPortalCreated);
+		PM->OnPortalDestroyed.AddDynamic(this, &APortalProjectCharacter::OnPortalDestroyed);
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////// Input
@@ -313,8 +326,59 @@ void APortalProjectCharacter::ShootBullet(bool bIsLeftClick)
 	UGameplayStatics::FinishSpawningActor(Bullet, FirePoint);
 }
 
+void APortalProjectCharacter::OnPortalCreated(EPortalType Type)
+{
+	if (!PlayerUI)
+	{
+		return;
+	}
+	
+	switch (Type) {
+	case EPortalType::Player1Blue:
+	case EPortalType::Player1Purple:
+		if (PlayerType != EPlayerType::PBody)
+		{
+			return;
+		}
+		break;
+	case EPortalType::Player2Orange:
+	case EPortalType::Player2Red:
+		if (PlayerType != EPlayerType::Atlas)
+		{
+			return;
+		}
+		break;
+	}
+	
+	PlayerUI->AddedPortal(Type);
+}
 
+void APortalProjectCharacter::OnPortalDestroyed(EPortalType Type)
+{
+	if (!PlayerUI)
+	{
+		return;
+	}
 
+	switch (Type) {
+	case EPortalType::Player1Blue:
+	case EPortalType::Player1Purple:
+		if (PlayerType != EPlayerType::PBody)
+		{
+			return;
+		}
+		break;
+	case EPortalType::Player2Orange:
+	case EPortalType::Player2Red:
+		if (PlayerType != EPlayerType::Atlas)
+		{
+			return;
+		}
+		break;
+	}
+
+	PlayerUI->RemovedPortal(Type);
+}
 
 
 void APortalProjectCharacter::ServerRPC_LeftClick_Implementation()
@@ -327,19 +391,12 @@ void APortalProjectCharacter::ServerRPC_RightClick_Implementation()
 	ShootBullet(false);
 }
 
-
-
-
 void APortalProjectCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(APortalProjectCharacter, bHasCube);
 	DOREPLIFETIME(APortalProjectCharacter, PlayerType);
 }
-
-
-
-
 
 void APortalProjectCharacter::Tick(float DeltaSeconds)
 {

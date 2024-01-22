@@ -9,6 +9,9 @@
 
 class APortal_PortalDemo;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPortalCreated, EPortalType, PortalType);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPortalDestroyed, EPortalType, PortalType);
+
 UCLASS()
 class PORTALPROJECT_API APortal_PortalManager : public AActor
 {
@@ -24,6 +27,9 @@ protected:
 
 public:
 
+	FPortalCreated OnPortalCreated;
+	FPortalDestroyed OnPortalDestroyed;
+	
 	void SpawnPortal(class APortalActor** OutPointer, APortalActor** OppositePointer, const EPortalType InType,
 					 const FTransform& PortalSpawnTransform, APawn* PortalOwner, class APortal_Tablet* Tablet);
 
@@ -44,6 +50,12 @@ public:
 
 	UFUNCTION(Server, Reliable)
 	void RequestPortal(EPortalType Type, class APortal_Tablet* Tablet, APawn* PortalOwner);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void BroadcastPortalCreated(EPortalType Type);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void BroadcastPortalDeleted(EPortalType Type);
 	
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&) const override;
 	

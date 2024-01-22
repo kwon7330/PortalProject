@@ -181,6 +181,9 @@ void APortalActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
 		}
 		break;
 	}
+
+	PortalManager->OnPortalDestroyed.Broadcast(Type);
+	PortalManager->BroadcastPortalDeleted(Type);
 }
 
 void APortalActor::OnRep_LinkedPortal()
