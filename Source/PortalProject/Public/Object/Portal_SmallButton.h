@@ -7,6 +7,7 @@
 #include "Interactable.h"
 #include "Portal_SmallButton.generated.h"
 
+class ASphereBallFactory;
 class APortal_Screen;
 class UCapsuleComponent;
 
@@ -37,6 +38,9 @@ public:
 	UPROPERTY(EditAnywhere)
 	APortal_Screen* Screen;
 
+	UPROPERTY(EditAnywhere)
+	ASphereBallFactory* Factory;
+	
 	float CurrentTime = 0;
 	float FixedTime = 3.0f;
 
@@ -44,8 +48,11 @@ public:
 
 public:
 	virtual void Interact(APortalProjectCharacter* Character) override;
+	
 
 	UFUNCTION(Server,Reliable)
 	void ServerRPC_ButtonInteract();
+	UFUNCTION(Server,Reliable)
+	void ServerRPC_SpButtonInteract();
 	
 };

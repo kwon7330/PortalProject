@@ -5,6 +5,7 @@
 
 #include "Components/BoxComponent.h"
 #include "Object/MovingFloor.h"
+#include "Object/SphereBallFactory.h"
 #include "PortalProject/PortalProjectCharacter.h"
 
 
@@ -55,6 +56,11 @@ void AInteractButton::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor
 			UE_LOG(LogTemp,Warning,TEXT("isMovingFloor"));
 			ServerRPC_OnOverlap();
 			//MovingFloor->ButtonInteract();
+		}
+		else if(BallFactory)
+		{
+			// 만약 월드 안에 모든 버튼이 눌린다면 공을 떨군다.
+			BallFactory->FallingBall();
 		}
 	}
 }

@@ -13,6 +13,10 @@ void IInteractable::ButtonInteract()
 {
 }
 
+void IInteractable::FallingBall()
+{
+}
+
 
 
 

@@ -130,21 +130,21 @@ void APortalProjectCharacter::Pickup(const FInputActionValue& Value)
 
 
 
-void APortalProjectCharacter::AttachCube(AActor* Cube)
-{
-	UE_LOG(LogTemp,Warning,TEXT("Attach Cube!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"));
-	auto MeshComp = Cube->GetComponentByClass<UStaticMeshComponent>();
-	MeshComp->SetSimulatePhysics(false);
-	MeshComp->AttachToComponent(AttachComp,FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-}
-
-void APortalProjectCharacter::DetachCube(AActor* Cube)
-{
-	UE_LOG(LogTemp,Warning,TEXT("Detach Cube!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"));
-	auto MeshComp = Cube->GetComponentByClass<UStaticMeshComponent>();
-	MeshComp->SetSimulatePhysics(true);
-	MeshComp->DetachFromComponent(FDetachmentTransformRules::KeepRelativeTransform);
-}
+// void APortalProjectCharacter::AttachCube(AActor* Cube)
+// {
+// 	UE_LOG(LogTemp,Warning,TEXT("Attach Cube!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"));
+// 	auto MeshComp = Cube->GetComponentByClass<UStaticMeshComponent>();
+// 	MeshComp->SetSimulatePhysics(false);
+// 	MeshComp->AttachToComponent(AttachComp,FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+// }
+//
+// void APortalProjectCharacter::DetachCube(AActor* Cube)
+// {
+// 	UE_LOG(LogTemp,Warning,TEXT("Detach Cube!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"));
+// 	auto MeshComp = Cube->GetComponentByClass<UStaticMeshComponent>();
+// 	MeshComp->SetSimulatePhysics(true);
+// 	MeshComp->DetachFromComponent(FDetachmentTransformRules::KeepRelativeTransform);
+// }
 
 
 
