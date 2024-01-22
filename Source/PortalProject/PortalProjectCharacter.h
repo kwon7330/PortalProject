@@ -195,5 +195,12 @@ public:
 
 	UPROPERTY(VisibleAnywhere, Category = "UI")
 	UPlayerUI* PlayerUI;
+
+	UFUNCTION()
+	void OnPortalCreated(EPortalType Type);
+
+	UFUNCTION()
+	void OnPortalDestroyed(EPortalType Type);
+
 };
 
