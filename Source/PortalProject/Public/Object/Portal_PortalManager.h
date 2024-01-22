@@ -22,9 +22,13 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
+public:
+
+	void SpawnPortal(class APortalActor** OutPointer, APortalActor** OppositePointer, const EPortalType InType,
+					 const FTransform& PortalSpawnTransform, APawn* PortalOwner, class APortal_Tablet* Tablet);
+	
 	UPROPERTY(Replicated, EditAnywhere, Category="PortalManager|Portals")
-	class APortalActor* BluePortal;
+	APortalActor* BluePortal;
 	UPROPERTY(Replicated, EditAnywhere, Category="PortalManager|Portals")
 	APortalActor* PurplePortal;
 	UPROPERTY(Replicated, EditAnywhere, Category="PortalManager|Portals")
@@ -36,7 +40,7 @@ public:
 	TSubclassOf<class APortalActor> PortalClass;
 
 	UFUNCTION(Server, Reliable)
-	void RequestPortal(EPortalType Type, const FTransform& Transform, APawn* PortalOwner);
+	void RequestPortal(EPortalType Type, class APortal_Tablet* Tablet, APawn* PortalOwner);
 	
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&) const override;
 	

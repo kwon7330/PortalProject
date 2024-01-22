@@ -24,7 +24,9 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-//=================================================================================================================================	
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&) const override;
+
+	//=================================================================================================================================	
 
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="WallSettings")
 	UBoxComponent* BoxComponent;
@@ -32,4 +34,7 @@ public:
 	UStaticMeshComponent* MeshComp;
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="WallSettings")
 	UArrowComponent* SpawnPoint;
+
+	UPROPERTY(EditAnywhere, Replicated)
+	class APortalActor* PortalActor;
 };

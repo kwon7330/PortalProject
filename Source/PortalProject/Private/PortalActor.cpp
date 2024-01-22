@@ -84,7 +84,7 @@ void APortalActor::BeginPlay()
 	check(PortalBaseMat);
 	PortalMat = UKismetMaterialLibrary::CreateDynamicMaterialInstance(World, PortalBaseMat);
 	PortalPlane->SetMaterial(0, PortalMat);
-
+	
 	const FVector2D ViewPortSize = UWidgetLayoutLibrary::GetViewportSize(World);
 	PortalRenderTarget = UKismetRenderingLibrary::CreateRenderTarget2D(World, (int32)ViewPortSize.X, (int32)ViewPortSize.Y);
 	PortalRenderTarget->bAutoGenerateMips = false;
@@ -141,10 +141,16 @@ void APortalActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
 		}
 		break;
 	case EPortalType::Player2Orange:
-		// TODO
+		if (PortalManager->RedPortal)
+		{
+			PortalManager->RedPortal->UnlinkPortal();
+		}
 		break;
 	case EPortalType::Player2Red:
-		// TODO
+		if (PortalManager->OrangePortal)
+		{
+			PortalManager->OrangePortal->UnlinkPortal();
+		}
 		break;
 	}
 }
@@ -329,6 +335,10 @@ void APortalActor::CheckIfShouldTeleport()
 
 	if (OverlappingActors[0])
 	{
+		/*if (RecentlyTeleported.Contains(OverlappingActors[0]))
+		{
+			return;
+		}*/
 		//UE_LOG(LogTemp, Warning, TEXT("%s"), *OverlappingActors[0]->GetActorNameOrLabel())
 		FVector ActorLoc = OverlappingActors[0]->GetActorLocation();
 		if (APortalProjectCharacter* Chara = Cast<APortalProjectCharacter>(OverlappingActors[0]))
@@ -346,11 +356,14 @@ void APortalActor::CheckIfShouldTeleport()
 		bool bCross = CheckIfPointCrossingPortal(ActorLoc, PortalPlane->GetComponentLocation(), ForwardDirection->GetForwardVector());
 		if (bCross)
 		{
-			// TODO: Teleport the objects too
 			ACharacter* Char = Cast<ACharacter>(OverlappingActors[0]);
 			if (Char)
 			{
 				TeleportChar(Char);
+			}
+			else
+			{
+				TeleportObject(OverlappingActors[0]);
 			}
 		}
 	}
@@ -375,17 +388,30 @@ bool APortalActor::CheckIfPointCrossingPortal(const FVector& Point, const FVecto
 	return bInCrossing;
 }
 
-void APortalActor::ServerRPC_TeleportChar_Implementation(ACharacter* Char)
-{
-	TeleportChar(Char);
-}
-
 void APortalActor::TeleportChar(ACharacter* Char)
 {
+
+	PRINTLOG(TEXT("Teleported"))
+	
 	// Teleport the character.
-	//ACharacter* PC = UGameplayStatics::GetPlayerCharacter(World, 0);
 	Char->SetActorLocationAndRotation(UpdateLocation(Char->GetActorLocation()), UpdateRotation(Char->GetActorRotation()));
 
+	RecentlyTeleported.Add(Char);
+
+	FTimerHandle TeleportTimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(
+		TeleportTimerHandle,
+		FTimerDelegate::CreateLambda(
+			[&]
+			{
+				RecentlyTeleported.Remove(Char);
+				PRINTLOG(TEXT("Teleported removed"))
+			}
+		),
+		TeleportCooldown,
+		false
+	);
+	
 	// Set the new control rotation.
 	APlayerController* Cont = Cast<APlayerController>(Char->GetController());
 	if (Cont)
@@ -393,11 +419,11 @@ void APortalActor::TeleportChar(ACharacter* Char)
 		Cont->SetControlRotation(UpdateRotation(Cont->GetControlRotation()));
 		FRotator InitialRot = Cont->GetControlRotation();
 		Cont->SetControlRotation(FRotator(InitialRot.Pitch, InitialRot.Yaw, 0));
-
-	}
+	}	
 
 	// Update the velocity.
-	Char->GetMovementComponent()->Velocity = UpdateVelocity(Char->GetMovementComponent()->Velocity);
+	Char->GetMovementComponent()->Velocity = UpdateVelocity(Char->GetMovementComponent()->Velocity) +
+		LinkedPortal->ForwardDirection->GetForwardVector() * AfterTeleportVelocity;
 	Char->GetMovementComponent()->UpdateComponentVelocity();
 
 	// TODO: Smooth Orientation
@@ -407,6 +433,11 @@ void APortalActor::TeleportChar(ACharacter* Char)
 	// Cut this frame
 	//UGameplayStatics::GetPlayerCameraManager(World, 0)->SetGameCameraCutThisFrame();
 	//PortalCamera->bCameraCutThisFrame = true;
+}
+
+void APortalActor::TeleportObject(AActor* Actor)
+{
+	Actor->SetActorLocationAndRotation(UpdateLocation(Actor->GetActorLocation()), UpdateRotation(Actor->GetActorRotation()));
 }
 
 void APortalActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

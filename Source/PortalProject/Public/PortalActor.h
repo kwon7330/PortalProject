@@ -52,9 +52,19 @@ public:
 
 	UPROPERTY()
 	int32 CurrentRecursion {0};
+
+	UPROPERTY(VisibleAnywhere)
+	TSet<AActor*> RecentlyTeleported;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Portal|Settings")
+	float TeleportCooldown {0.15f};
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Portal|Settings")
 	int32 MaxRecursions {2};
+
+	// 텔레포트 이후 밀어내는 값.
+	UPROPERTY(EditAnywhere, Category = "Portal|Settings")
+	float AfterTeleportVelocity {500};
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Portal|Components")
 	USceneComponent* RootComp;
@@ -82,7 +92,7 @@ public:
 
 	UPROPERTY(VisibleAnywhere, Category = "Portal|Mat")
 	class UTextureRenderTarget2D* PortalRenderTarget;
-
+	
 	UPROPERTY()
 	FVector LastPosition;
 
@@ -104,12 +114,9 @@ public:
 	void CheckViewportSize();
 	void CheckIfShouldTeleport();
 	bool CheckIfPointCrossingPortal(const FVector& Point, const FVector& PortalLocation, const FVector& PortalNormal);
-
-	UFUNCTION(Server, Reliable)
-	void ServerRPC_TeleportChar(ACharacter* Char);
 	
 	void TeleportChar(ACharacter* Char);
-
+	void TeleportObject(AActor* Actor);
+	
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&) const override;
-
 };

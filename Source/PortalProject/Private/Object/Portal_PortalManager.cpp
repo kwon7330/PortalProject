@@ -3,8 +3,10 @@
 
 #include "Object/Portal_PortalManager.h"
 #include "PortalActor.h"
+#include "Components/ArrowComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
+#include "Object/Portal_Tablet.h"
 
 // Sets default values
 APortal_PortalManager::APortal_PortalManager()
@@ -33,88 +35,52 @@ void APortal_PortalManager::BeginPlay()
 	check(PortalClass);
 }
 
-void APortal_PortalManager::RequestPortal_Implementation(EPortalType Type, const FTransform& Transform, APawn* PortalOwner)
+void APortal_PortalManager::SpawnPortal(APortalActor** OutPointer, APortalActor** OppositePointer, const EPortalType InType,
+	const FTransform& PortalSpawnTransform, APawn* PortalOwner, APortal_Tablet* Tablet)
 {
+	if (*OutPointer)
+	{
+		(*OutPointer)->Destroy();
+		*OutPointer = nullptr;
+	}
+
+	*OutPointer = GetWorld()->SpawnActorDeferred<APortalActor>(PortalClass, PortalSpawnTransform, PortalOwner);
+	(*OutPointer)->Type = InType;
+	UGameplayStatics::FinishSpawningActor(*OutPointer, PortalSpawnTransform);
+	Tablet->PortalActor = (*OutPointer);
+
+	if (*OppositePointer)
+	{
+		(*OutPointer)->LinkedPortal = *OppositePointer;
+		(*OutPointer)->LinkWithOtherPortal();
+		(*OppositePointer)->LinkedPortal = *OutPointer;
+		(*OppositePointer)->LinkWithOtherPortal();
+	}
+}
+
+void APortal_PortalManager::RequestPortal_Implementation(EPortalType Type, class APortal_Tablet* Tablet, APawn* PortalOwner)
+{
+	FTransform Transform = Tablet->SpawnPoint->GetComponentTransform();
 	FTransform PortalSpawnTransform = FTransform(Transform.GetRotation(), Transform.GetTranslation(), FVector::OneVector);
 
+	if (Tablet->PortalActor)
+	{
+		Tablet->PortalActor->Destroy();
+		Tablet->PortalActor = nullptr;
+	}
+	
 	switch (Type) {
 	case EPortalType::Player1Blue:
-		if (BluePortal)
-		{
-			BluePortal->Destroy();
-			BluePortal = nullptr;
-		}
-
-		BluePortal = GetWorld()->SpawnActorDeferred<APortalActor>(PortalClass, PortalSpawnTransform, PortalOwner);
-		BluePortal->Type = Type;
-		UGameplayStatics::FinishSpawningActor(BluePortal, PortalSpawnTransform);
-
-		if (PurplePortal)
-		{
-			BluePortal->LinkedPortal = PurplePortal;
-			BluePortal->LinkWithOtherPortal();
-			PurplePortal->LinkedPortal = BluePortal;
-			PurplePortal->LinkWithOtherPortal();
-		}
-
+		SpawnPortal(&BluePortal, &PurplePortal, Type, PortalSpawnTransform, PortalOwner, Tablet);
 		break;
 	case EPortalType::Player1Purple:
-		if (PurplePortal)
-		{
-			PurplePortal->Destroy();
-			PurplePortal = nullptr;
-		}
-
-		PurplePortal = GetWorld()->SpawnActorDeferred<APortalActor>(PortalClass, PortalSpawnTransform, PortalOwner);
-		PurplePortal->Type = Type;
-		UGameplayStatics::FinishSpawningActor(PurplePortal, PortalSpawnTransform);
-
-		if (BluePortal)
-		{
-			PurplePortal->LinkedPortal = BluePortal;
-			PurplePortal->LinkWithOtherPortal();
-			BluePortal->LinkedPortal = PurplePortal;
-			BluePortal->LinkWithOtherPortal();
-		}
-
+		SpawnPortal(&PurplePortal, &BluePortal, Type, PortalSpawnTransform, PortalOwner, Tablet);
 		break;
 	case EPortalType::Player2Orange:
-		if (OrangePortal)
-		{
-			OrangePortal->Destroy();
-			OrangePortal = nullptr;
-		}
-
-		OrangePortal = GetWorld()->SpawnActorDeferred<APortalActor>(PortalClass, PortalSpawnTransform, PortalOwner);
-		OrangePortal->Type = Type;
-		UGameplayStatics::FinishSpawningActor(OrangePortal, PortalSpawnTransform);
-
-		if (RedPortal)
-		{
-			OrangePortal->LinkedPortal = RedPortal;
-			OrangePortal->LinkWithOtherPortal();
-			RedPortal->LinkedPortal = OrangePortal;
-			RedPortal->LinkWithOtherPortal();
-		}
+		SpawnPortal(&OrangePortal, &RedPortal, Type, PortalSpawnTransform, PortalOwner, Tablet);
 		break;
 	case EPortalType::Player2Red:
-		if (RedPortal)
-		{
-			RedPortal->Destroy();
-			RedPortal = nullptr;
-		}
-
-		RedPortal = GetWorld()->SpawnActorDeferred<APortalActor>(PortalClass, PortalSpawnTransform, PortalOwner);
-		RedPortal->Type = Type;
-		UGameplayStatics::FinishSpawningActor(RedPortal, PortalSpawnTransform);
-
-		if (OrangePortal)
-		{
-			RedPortal->LinkedPortal = OrangePortal;
-			RedPortal->LinkWithOtherPortal();
-			OrangePortal->LinkedPortal = RedPortal;
-			OrangePortal->LinkWithOtherPortal();
-		}
+		SpawnPortal(&RedPortal, &OrangePortal, Type, PortalSpawnTransform, PortalOwner, Tablet);
 		break;
 	}
 }

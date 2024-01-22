@@ -80,7 +80,7 @@ void APortal_Bullet::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor*
 	APortal_Tablet* Tablet = Cast<APortal_Tablet>(OtherActor);
 	if (Tablet != nullptr)
 	{
-		PortalManager->RequestPortal(Type, Tablet->SpawnPoint->GetComponentTransform(), GetInstigator());
+		PortalManager->RequestPortal(Type, Tablet, GetInstigator());
 		this->Destroy();
 	}
 }
