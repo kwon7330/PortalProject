@@ -5,6 +5,7 @@
 
 #include "Components/CapsuleComponent.h"
 #include "Object/Portal_Screen.h"
+#include "Object/SphereBallFactory.h"
 #include "PortalProject/PortalProjectCharacter.h"
 
 
@@ -54,10 +55,19 @@ void APortal_SmallButton::Interact(APortalProjectCharacter* Character)
 	{
 		ServerRPC_ButtonInteract();
 	}
+	else if(Factory)
+	{
+		ServerRPC_SpButtonInteract();
+	}
 	else UE_LOG(LogTemp,Warning,TEXT("nullptr"));
 	
 	
 	
+}
+
+void APortal_SmallButton::ServerRPC_SpButtonInteract_Implementation()
+{
+	Factory->FallingBall();
 }
 
 void APortal_SmallButton::ServerRPC_ButtonInteract_Implementation()
