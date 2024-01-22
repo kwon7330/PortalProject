@@ -129,9 +129,9 @@ void APortalActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 	switch (Type) {
 	case EPortalType::Player1Blue:
-		if (PortalManager->OrangePortal)
+		if (PortalManager->PurplePortal)
 		{
-			PortalManager->OrangePortal->UnlinkPortal();
+			PortalManager->PurplePortal->UnlinkPortal();
 		}
 		break;
 	case EPortalType::Player1Purple:
@@ -180,11 +180,13 @@ void APortalActor::LinkWithOtherPortal()
 	const FVector OffDist = ForwardDirection->GetForwardVector() * OffsetAmount;
 	const FLinearColor OffsetDist = FLinearColor(OffDist.X, OffDist.Y, OffDist.Z, 0.f);
 	PortalMat->SetVectorParameterValue(TEXT("OffsetDistance"), OffsetDist);
+	PortalCamera->HiddenActors.AddUnique(LinkedPortal);
 }
 
 void APortalActor::UnlinkPortal()
 {
 	this->LinkedPortal = nullptr;
+	PortalCamera->HiddenActors.Empty();
 }
 
 void APortalActor::SetClipPlanes()

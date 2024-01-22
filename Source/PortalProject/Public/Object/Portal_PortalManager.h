@@ -26,6 +26,9 @@ public:
 
 	void SpawnPortal(class APortalActor** OutPointer, APortalActor** OppositePointer, const EPortalType InType,
 					 const FTransform& PortalSpawnTransform, APawn* PortalOwner, class APortal_Tablet* Tablet);
+
+	UFUNCTION()
+	void OnPlayerFizzled(EPlayerType Player);
 	
 	UPROPERTY(Replicated, EditAnywhere, Category="PortalManager|Portals")
 	APortalActor* BluePortal;
