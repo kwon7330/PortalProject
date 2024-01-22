@@ -6,6 +6,7 @@
 #include "Components/ArrowComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
+#include "Object/Fizzler.h"
 #include "Object/Portal_Tablet.h"
 
 // Sets default values
@@ -31,8 +32,16 @@ APortal_PortalManager::APortal_PortalManager()
 void APortal_PortalManager::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
 	check(PortalClass);
+
+	TArray<AActor*> Fizzlers;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AFizzler::StaticClass(), Fizzlers);
+
+	for (AActor* Fizzler : Fizzlers)
+	{
+		Cast<AFizzler>(Fizzler)->OnPlayerFizzled.AddUniqueDynamic(this, &APortal_PortalManager::OnPlayerFizzled);
+	}
 }
 
 void APortal_PortalManager::SpawnPortal(APortalActor** OutPointer, APortalActor** OppositePointer, const EPortalType InType,
@@ -81,6 +90,36 @@ void APortal_PortalManager::RequestPortal_Implementation(EPortalType Type, class
 		break;
 	case EPortalType::Player2Red:
 		SpawnPortal(&RedPortal, &OrangePortal, Type, PortalSpawnTransform, PortalOwner, Tablet);
+		break;
+	}
+}
+
+void APortal_PortalManager::OnPlayerFizzled(EPlayerType Player)
+{
+	switch (Player) {
+	case EPlayerType::PBody:
+		if (BluePortal)
+		{
+			BluePortal->Destroy();
+			BluePortal = nullptr;
+		}
+		if (PurplePortal)
+		{
+			PurplePortal->Destroy();
+			PurplePortal = nullptr;
+		}
+		break;
+	case EPlayerType::Atlas:
+		if (OrangePortal)
+		{
+			OrangePortal->Destroy();
+			OrangePortal = nullptr;
+		}
+		if (RedPortal)
+		{
+			RedPortal->Destroy();
+			RedPortal = nullptr;
+		}
 		break;
 	}
 }

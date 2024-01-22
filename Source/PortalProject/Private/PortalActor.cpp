@@ -3,12 +3,15 @@
 
 #include "PortalActor.h"
 
+#include "NiagaraComponent.h"
+#include "PortalableObject.h"
 #include "Blueprint/WidgetLayoutLibrary.h"
 #include "Camera/CameraComponent.h"
 #include "Components/ArrowComponent.h"
 #include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SceneCaptureComponent2D.h"
+#include "Engine/StaticMeshActor.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -17,6 +20,7 @@
 #include "Kismet/KismetRenderingLibrary.h"
 #include "Net/UnrealNetwork.h"
 #include "Object/Portal_PortalManager.h"
+#include "Object/Portal_Tablet.h"
 #include "PortalProject/PortalProjectCharacter.h"
 #include "PortalProject/PortalProjectPlayerController.h"
 
@@ -27,14 +31,17 @@ APortalActor::APortalActor()
 		ForwardDirection(CreateDefaultSubobject<UArrowComponent>(TEXT("Forward Direction"))),
 		PortalEdgeMesh(CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Portal Edge Mesh"))),
 		ActorDetection(CreateDefaultSubobject<UBoxComponent>(TEXT("Actor Detection"))),
-		PortalCamera(CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("Portal Camera")))
+		PortalCamera(CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("Portal Camera"))),
+		PortalVfxComp(CreateDefaultSubobject<UNiagaraComponent>(TEXT("Portal VFX Comp"))),
+		BacksideDetection(CreateDefaultSubobject<UBoxComponent>(TEXT("Backside Detection"))),
+		PlaneBox(CreateDefaultSubobject<UBoxComponent>(TEXT("Plane Box")))
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	
 	// Set up replication.
 	bReplicates = true;
-	SetReplicateMovement(true);
+	AActor::SetReplicateMovement(true);
 	bAlwaysRelevant = true;
 	
 	// Set up attachments.
@@ -44,6 +51,9 @@ APortalActor::APortalActor()
 	PortalCamera->SetupAttachment(RootComponent);
 	ActorDetection->SetupAttachment(RootComponent);
 	ForwardDirection->SetupAttachment(RootComponent);
+	PortalVfxComp->SetupAttachment(RootComponent);
+	BacksideDetection->SetupAttachment(RootComponent);
+	PlaneBox->SetupAttachment(RootComponent);
 	
 	// Set tick group.
 	SetTickGroup(TG_PostUpdateWork);
@@ -95,6 +105,8 @@ void APortalActor::BeginPlay()
 	EdgeMeshMat->SetVectorParameterValue(TEXT("PortalColor"), *PortalColorMap.Find(Type));
 	PortalEdgeMesh->SetMaterial(0, EdgeMeshMat);
 
+	PortalVfxComp->SetVariableLinearColor(FName("PortalColor"), *PortalColorMap.Find(Type));
+
 	APortalProjectPlayerController* PPPC = Cast<APortalProjectPlayerController>(
 		UGameplayStatics::GetPlayerController(GetWorld(), 0));
 	if (PPPC)
@@ -104,6 +116,22 @@ void APortalActor::BeginPlay()
 	}
 	
 	LinkWithOtherPortal();
+
+
+	GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateLambda([&]
+	{
+		TArray<AActor*> BacksideActors;
+		BacksideDetection->GetOverlappingActors(BacksideActors);
+
+		CollisionIgnoreActors = BacksideActors.FilterByPredicate([](const AActor* Actor)->bool
+		{
+			return Cast<APortal_Tablet>(Actor) || Cast<AStaticMeshActor>(Actor);
+		});
+	}));
+
+	PlaneBox->OnComponentBeginOverlap.AddDynamic(this, &APortalActor::OnPlaneBoxBeginOverlap);
+	PlaneBox->OnComponentEndOverlap.AddDynamic(this, &APortalActor::OnPlaneBoxEndOverlap);
+
 	PRINTLOG(TEXT("END Owner: %s"), GetOwner() ? *GetOwner()->GetActorNameOrLabel(): TEXT("None"))
 }
 
@@ -117,10 +145,10 @@ void APortalActor::Tick(float DeltaTime)
 		UpdateSceneCaptureRecursive(FVector(), FRotator());
 		CheckViewportSize();
 		CheckIfShouldTeleport();
-
 		//DrawDebugPoint(World, LinkedPortal->PortalCamera->GetComponentLocation(), 10, FColor::Red);
 		//DrawDebugCamera(World, LinkedPortal->PortalCamera->GetComponentLocation(), LinkedPortal->PortalCamera->GetComponentRotation(),90.0, 2.f);
 	}
+	TickRecentlyTeleported(DeltaTime);
 }
 
 void APortalActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -129,9 +157,9 @@ void APortalActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 	switch (Type) {
 	case EPortalType::Player1Blue:
-		if (PortalManager->OrangePortal)
+		if (PortalManager->PurplePortal)
 		{
-			PortalManager->OrangePortal->UnlinkPortal();
+			PortalManager->PurplePortal->UnlinkPortal();
 		}
 		break;
 	case EPortalType::Player1Purple:
@@ -161,6 +189,101 @@ void APortalActor::OnRep_LinkedPortal()
 	LinkWithOtherPortal();
 }
 
+void APortalActor::TickRecentlyTeleported(float DeltaTime)
+{
+	for (auto Itr =RecentlyTeleported.CreateIterator(); Itr; ++Itr)
+	{
+		Itr->Value += DeltaTime;
+		if (Itr->Value >= TeleportCooldown)
+		{
+			Itr.RemoveCurrent();
+		}
+	}
+}
+
+void APortalActor::OnPlaneBoxBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+                                          UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (!LinkedPortal)
+	{
+		return;
+	}
+	
+	if (!OtherActor->Implements<UPortalableObject>())
+	{
+		return;
+	}
+
+	PRINTLOG(TEXT("Begin Overlap %s"), *OtherActor->GetActorNameOrLabel());
+
+	UPrimitiveComponent* PrimitiveComponent = Cast<UPrimitiveComponent>(OtherActor->GetRootComponent());
+	if (PrimitiveComponent)
+	{
+		for (auto A: CollisionIgnoreActors)
+		{
+			UPrimitiveComponent* P = Cast<UPrimitiveComponent>(A->GetRootComponent());
+			if (P)
+			{
+				P->IgnoreActorWhenMoving(OtherActor, true);
+			}
+			PrimitiveComponent->IgnoreActorWhenMoving(A, true);
+		}
+
+		if (PrimitiveComponent->IsSimulatingPhysics())
+		{
+			// if simulating physics,
+			PrimitiveComponent->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Ignore);
+		}
+	}
+	
+}
+
+void APortalActor::OnPlaneBoxEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	if (!OtherActor->Implements<UPortalableObject>())
+	{
+		return;
+	}
+
+	RecentlyTeleported.Remove(OtherActor);
+
+	UPrimitiveComponent* PrimitiveComponent = Cast<UPrimitiveComponent>(OtherActor->GetRootComponent());
+	if (PrimitiveComponent)
+	{
+		PrimitiveComponent->ClearMoveIgnoreActors();
+		for (auto A: CollisionIgnoreActors)
+		{
+			UPrimitiveComponent* P = Cast<UPrimitiveComponent>(A->GetRootComponent());
+			if (P)
+			{
+				P->IgnoreActorWhenMoving(OtherActor, false);
+			}
+		}
+	}
+}
+
+void APortalActor::OnActorDetectionBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (!LinkedPortal)
+	{
+		return;
+	}
+
+	if (!OtherActor->Implements<UPortalableObject>())
+	{
+		return;
+	}
+
+	DetectedActors.AddUnique(OtherActor);
+}
+
+void APortalActor::OnActorDetectionEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	DetectedActors.RemoveSwap(OtherActor);
+}
+
 void APortalActor::LinkWithOtherPortal()
 {
 	if (!LinkedPortal)
@@ -180,11 +303,13 @@ void APortalActor::LinkWithOtherPortal()
 	const FVector OffDist = ForwardDirection->GetForwardVector() * OffsetAmount;
 	const FLinearColor OffsetDist = FLinearColor(OffDist.X, OffDist.Y, OffDist.Z, 0.f);
 	PortalMat->SetVectorParameterValue(TEXT("OffsetDistance"), OffsetDist);
+	LinkedPortal->PortalCamera->HiddenComponents.AddUnique(PortalVfxComp);
 }
 
 void APortalActor::UnlinkPortal()
 {
 	this->LinkedPortal = nullptr;
+	PortalCamera->ClearHiddenComponents();
 }
 
 void APortalActor::SetClipPlanes()
@@ -326,7 +451,15 @@ void APortalActor::CheckViewportSize()
 void APortalActor::CheckIfShouldTeleport()
 {
 	TArray<AActor*> OverlappingActors;
-	ActorDetection->GetOverlappingActors(OverlappingActors, PortalableActorSubclassOf);
+	ActorDetection->GetOverlappingActors(OverlappingActors);
+
+	for (auto Itr = OverlappingActors.CreateIterator(); Itr; ++Itr)
+	{
+		if (!(*Itr)->Implements<UPortalableObject>())
+		{
+			Itr.RemoveCurrentSwap();
+		}
+	}
 	
 	if (OverlappingActors.IsEmpty())
 	{
@@ -335,10 +468,10 @@ void APortalActor::CheckIfShouldTeleport()
 
 	if (OverlappingActors[0])
 	{
-		/*if (RecentlyTeleported.Contains(OverlappingActors[0]))
+		if (RecentlyTeleported.Contains(OverlappingActors[0]))
 		{
 			return;
-		}*/
+		}
 		//UE_LOG(LogTemp, Warning, TEXT("%s"), *OverlappingActors[0]->GetActorNameOrLabel())
 		FVector ActorLoc = OverlappingActors[0]->GetActorLocation();
 		if (APortalProjectCharacter* Chara = Cast<APortalProjectCharacter>(OverlappingActors[0]))
@@ -396,22 +529,9 @@ void APortalActor::TeleportChar(ACharacter* Char)
 	// Teleport the character.
 	Char->SetActorLocationAndRotation(UpdateLocation(Char->GetActorLocation()), UpdateRotation(Char->GetActorRotation()));
 
-	RecentlyTeleported.Add(Char);
+	RecentlyTeleported.Add(Char, 0.f);
+	LinkedPortal->RecentlyTeleported.Add(Char, 0.f);
 
-	FTimerHandle TeleportTimerHandle;
-	GetWorld()->GetTimerManager().SetTimer(
-		TeleportTimerHandle,
-		FTimerDelegate::CreateLambda(
-			[&]
-			{
-				RecentlyTeleported.Remove(Char);
-				PRINTLOG(TEXT("Teleported removed"))
-			}
-		),
-		TeleportCooldown,
-		false
-	);
-	
 	// Set the new control rotation.
 	APlayerController* Cont = Cast<APlayerController>(Char->GetController());
 	if (Cont)
@@ -422,7 +542,7 @@ void APortalActor::TeleportChar(ACharacter* Char)
 	}	
 
 	// Update the velocity.
-	Char->GetMovementComponent()->Velocity = UpdateVelocity(Char->GetMovementComponent()->Velocity) +
+	Char->GetMovementComponent()->Velocity = UpdateVelocity(Char->GetMovementComponent()->Velocity) * 1.5f +
 		LinkedPortal->ForwardDirection->GetForwardVector() * AfterTeleportVelocity;
 	Char->GetMovementComponent()->UpdateComponentVelocity();
 
@@ -437,7 +557,16 @@ void APortalActor::TeleportChar(ACharacter* Char)
 
 void APortalActor::TeleportObject(AActor* Actor)
 {
+	FVector BeforeVelocity = Actor->GetVelocity();
 	Actor->SetActorLocationAndRotation(UpdateLocation(Actor->GetActorLocation()), UpdateRotation(Actor->GetActorRotation()));
+
+	UPrimitiveComponent* PrimitiveComponent = Cast<UPrimitiveComponent>(Actor->GetRootComponent());
+
+	if (PrimitiveComponent)
+	{
+		PrimitiveComponent->AddImpulse(UpdateVelocity(BeforeVelocity) * 1.5f +
+		LinkedPortal->ForwardDirection->GetForwardVector() * AfterTeleportVelocity);
+	}
 }
 
 void APortalActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
