@@ -28,6 +28,10 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UPROPERTY(EditAnywhere)
+	UStaticMeshComponent* MeshComp;
+	
+	
+	UPROPERTY(EditAnywhere)
 	UArrowComponent* ArrowComp;
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<ASphereBall> BallFactory;
