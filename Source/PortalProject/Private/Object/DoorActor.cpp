@@ -69,6 +69,7 @@ void ADoorActor::MultiRPC_DoorAct_Implementation()
 	// FRotator NewRot = FMath::Lerp(FixRot,MeshComp->GetComponentRotation(),Time*0.2);
 	// MeshComp->SetRelativeRotation(NewRot);
 	MeshComp->SetVisibility(false);
+	MeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	
 }
 
@@ -79,6 +80,7 @@ void ADoorActor::MultiRPC_DoorRet_Implementation()
 	// MeshComp->SetRelativeRotation(NewRot);
 
 	MeshComp->SetVisibility(true);
+	MeshComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 }
 
 

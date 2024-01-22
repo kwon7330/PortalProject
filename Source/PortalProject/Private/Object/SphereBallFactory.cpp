@@ -10,8 +10,17 @@ ASphereBallFactory::ASphereBallFactory()
 {
  	
 	PrimaryActorTick.bCanEverTick = true;
+
+	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>("MeshComp");
+	SetRootComponent(MeshComp);
+	ConstructorHelpers::FObjectFinder<UStaticMesh>TempMesh(TEXT("/Script/Engine.StaticMesh'/Game/Resources/ItemDispenser/Dispenser_0.Dispenser_0'"));
+	if(TempMesh.Succeeded())
+	{
+		MeshComp->SetStaticMesh(TempMesh.Object);
+	}
 	ArrowComp = CreateDefaultSubobject<UArrowComponent>("ArrowComp");
-	
+	ArrowComp ->SetupAttachment(MeshComp);
+	ArrowComp -> SetRelativeRotation(FRotator(-90,0,0));
 }
 
 
