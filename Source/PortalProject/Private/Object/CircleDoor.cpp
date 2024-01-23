@@ -17,7 +17,7 @@ ACircleDoor::ACircleDoor()
 	{
 		MeshComp->SetSkeletalMesh(TempMesh.Object);
 	}
-	
+	bReplicates = true;
 }
 
 
@@ -38,13 +38,33 @@ void ACircleDoor::Tick(float DeltaTime)
 void ACircleDoor::DoorOpen()
 {
 	UE_LOG(LogTemp,Warning,TEXT("DoorOpen"));
-	MeshComp->PlayAnimation(OpenDoorAnim,true);
+	ServerRPC_DoorOpen();
 }
 
 
 void ACircleDoor::DoorClose()
 {
 	UE_LOG(LogTemp,Warning,TEXT("DoorClose"));
+	ServerRPC_DoorClose();
+}
+
+void ACircleDoor::MultiRPC_DoorClose_Implementation()
+{
 	MeshComp->PlayAnimation(CloseDoorAnim,true);
+}
+
+void ACircleDoor::ServerRPC_DoorClose_Implementation()
+{
+	MultiRPC_DoorClose();
+}
+
+void ACircleDoor::MultiRPC_DoorOpen_Implementation()
+{
+	MeshComp->PlayAnimation(OpenDoorAnim,true);
+}
+
+void ACircleDoor::ServerRPC_DoorOpen_Implementation()
+{
+	MultiRPC_DoorOpen();	
 }
 

@@ -24,6 +24,8 @@ ABallNest::ABallNest()
 	Trigger = CreateDefaultSubobject<UBoxComponent>("Trigger");
 	Trigger -> SetupAttachment(MeshComp);
 	Trigger -> SetRelativeScale3D(FVector(0.1f));
+
+	bReplicates = true;
 }
 
 

@@ -48,6 +48,13 @@ void ASphereBallFactory::FallingBall()
 
 void ASphereBallFactory::CheckButtonOverlap()
 {
+	
+	
+}
+
+
+void ASphereBallFactory::ServerRPC_CheckButtonOverlap_Implementation()
+{
 	UE_LOG(LogTemp,Warning,TEXT("CheckButtonOverLap"));
 	UWorld* World = GetWorld();
 	TArray<AActor*> Buttons;
@@ -69,29 +76,39 @@ void ASphereBallFactory::CheckButtonOverlap()
 			}
 		}
 	}
-
-	// 모든 버튼이 오버랩 상태인지 확인한 결과 출력
+	
 	if (AllButtonsOverlap)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("All Buttons overlapping"));
-		FTransform SpawnPoint = ArrowComp->GetComponentTransform();
-		GetWorld()->SpawnActor<ASphereBall>(BallFactory,SpawnPoint);
+		MultiRPC_CheckButtonOverlap();
 	}
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Not all Buttons overlapping"));
 	}
-	
 }
+
+
+void ASphereBallFactory::MultiRPC_CheckButtonOverlap_Implementation()
+{
+	UE_LOG(LogTemp, Warning, TEXT("All Buttons overlapping"));
+	FTransform SpawnPoint = ArrowComp->GetComponentTransform();
+	GetWorld()->SpawnActor<ASphereBall>(BallFactory,SpawnPoint);
+}
+
+
+
+
+
+void ASphereBallFactory::ServerRPC_FallingBall_Implementation()
+{
+	MultiRPC_FallingBall();
+}
+
+
 
 void ASphereBallFactory::MultiRPC_FallingBall_Implementation()
 {
 	FTransform SpawnPoint = ArrowComp->GetComponentTransform();
 	GetWorld()->SpawnActor<ASphereBall>(BallFactory,SpawnPoint);
-}
-
-void ASphereBallFactory::ServerRPC_FallingBall_Implementation()
-{
-	MultiRPC_FallingBall();
 }
 

@@ -4,6 +4,7 @@
 #include "Object/InteractButton.h"
 
 #include "Components/BoxComponent.h"
+#include "Net/UnrealNetwork.h"
 #include "Object/MovingFloor.h"
 #include "Object/SphereBallFactory.h"
 #include "PortalProject/PortalProjectCharacter.h"
@@ -91,3 +92,9 @@ void AInteractButton::ServerRPC_EndOverlap_Implementation()
 	MovingFloor->MultiRPC_ReturnAct();
 }
 
+void AInteractButton::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(AInteractButton, bisOverlap);
+	
+}

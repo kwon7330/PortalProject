@@ -47,7 +47,12 @@ public:
 
 	UFUNCTION(NetMulticast,Unreliable)
 	void MultiRPC_FallingBall();
-
-
+	
 	void CheckButtonOverlap();
+
+	UFUNCTION(Server,Reliable)
+	void ServerRPC_CheckButtonOverlap();
+
+	UFUNCTION(NetMulticast,Unreliable)
+	void MultiRPC_CheckButtonOverlap();
 };
