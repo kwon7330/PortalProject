@@ -49,7 +49,7 @@ void ASphereBallFactory::FallingBall()
 void ASphereBallFactory::CheckButtonOverlap()
 {
 	
-	
+	ServerRPC_CheckButtonOverlap();
 }
 
 
@@ -79,20 +79,15 @@ void ASphereBallFactory::ServerRPC_CheckButtonOverlap_Implementation()
 	
 	if (AllButtonsOverlap)
 	{
-		MultiRPC_CheckButtonOverlap();
+		UE_LOG(LogTemp, Warning, TEXT("All Buttons overlapping"));
+		FTransform SpawnPoint = ArrowComp->GetComponentTransform();
+		SpawnPoint.SetScale3D(FVector(1,1,1));
+		GetWorld()->SpawnActor<ASphereBall>(BallFactory,SpawnPoint);
 	}
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Not all Buttons overlapping"));
 	}
-}
-
-
-void ASphereBallFactory::MultiRPC_CheckButtonOverlap_Implementation()
-{
-	UE_LOG(LogTemp, Warning, TEXT("All Buttons overlapping"));
-	FTransform SpawnPoint = ArrowComp->GetComponentTransform();
-	GetWorld()->SpawnActor<ASphereBall>(BallFactory,SpawnPoint);
 }
 
 
