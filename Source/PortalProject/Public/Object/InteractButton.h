@@ -54,5 +54,6 @@ public:
 	void ServerRPC_EndOverlap();
 
 
+	UPROPERTY(Replicated)
 	bool bisOverlap;
 };

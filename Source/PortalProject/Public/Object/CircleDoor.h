@@ -37,4 +37,17 @@ public:
 	
 	void DoorOpen();
 	void DoorClose();
+
+	UFUNCTION(Server,Reliable)
+	void ServerRPC_DoorOpen();
+	UFUNCTION(NetMulticast,Unreliable)
+	void MultiRPC_DoorOpen();
+
+	UFUNCTION(Server,Reliable)
+	void ServerRPC_DoorClose();
+	UFUNCTION(NetMulticast,Unreliable)
+	void MultiRPC_DoorClose();
+
+	
+
 };
