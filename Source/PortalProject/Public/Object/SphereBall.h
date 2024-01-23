@@ -4,11 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "Interactable.h"
+#include "PortalableObject.h"
 #include "GameFramework/Actor.h"
 #include "SphereBall.generated.h"
 
 UCLASS()
-class PORTALPROJECT_API ASphereBall : public AActor, public IInteractable
+class PORTALPROJECT_API ASphereBall : public AActor, public IInteractable, public IPortalableObject
 {
 	GENERATED_BODY()
 	

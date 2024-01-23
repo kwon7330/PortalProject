@@ -1,7 +1,6 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "PortalProjectCharacter.h"
-#include "EngineUtils.h"
 #include "Animation/AnimInstance.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -20,7 +19,6 @@
 #include "Object/Portal_Bullet.h"
 #include "Object/Portal_Cube.h"
 #include "Object/Portal_PortalManager.h"
-#include "Object/Portal_SmallButton.h"
 #include "Object/Portal_Tablet.h"
 
 

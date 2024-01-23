@@ -50,7 +50,8 @@ void ACircleDoor::DoorClose()
 
 void ACircleDoor::MultiRPC_DoorClose_Implementation()
 {
-	MeshComp->PlayAnimation(CloseDoorAnim,true);
+	MeshComp->PlayAnimation(CloseDoorAnim, false);
+	MeshComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 }
 
 void ACircleDoor::ServerRPC_DoorClose_Implementation()
@@ -60,7 +61,8 @@ void ACircleDoor::ServerRPC_DoorClose_Implementation()
 
 void ACircleDoor::MultiRPC_DoorOpen_Implementation()
 {
-	MeshComp->PlayAnimation(OpenDoorAnim,true);
+	MeshComp->PlayAnimation(OpenDoorAnim, false);
+	MeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void ACircleDoor::ServerRPC_DoorOpen_Implementation()

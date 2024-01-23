@@ -48,7 +48,6 @@ void ASphereBallFactory::FallingBall()
 
 void ASphereBallFactory::CheckButtonOverlap()
 {
-	
 	ServerRPC_CheckButtonOverlap();
 }
 
@@ -89,10 +88,6 @@ void ASphereBallFactory::ServerRPC_CheckButtonOverlap_Implementation()
 		UE_LOG(LogTemp, Warning, TEXT("Not all Buttons overlapping"));
 	}
 }
-
-
-
-
 
 void ASphereBallFactory::ServerRPC_FallingBall_Implementation()
 {

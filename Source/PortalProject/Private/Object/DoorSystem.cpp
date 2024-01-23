@@ -2,6 +2,7 @@
 
 #include "Object/DoorSystem.h"
 #include "Components/BoxComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "Object/DoorActor.h"
 #include "Object/Portal_Screen.h"
@@ -19,6 +20,7 @@ ADoorSystem::ADoorSystem()
 	TriggerBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 
 	bReplicates = true;
+	bAlwaysRelevant = true;
 }
 
 
@@ -61,14 +63,8 @@ void ADoorSystem::EndOverlap(UPrimitiveComponent* OverlappedComponent,
 	AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
 	auto Player = Cast<APortalProjectCharacter>(OtherActor);
-	
-		CheckBox.Remove(Player);
 
-		if(Door)
-		{
-			ServerRPC_DoorClose();
-		}	
-	
+	CheckBox.Remove(Player);
 }
 
 

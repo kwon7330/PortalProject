@@ -545,7 +545,7 @@ void APortalActor::TeleportChar(ACharacter* Char)
 	}	
 
 	// Update the velocity.
-	Char->GetMovementComponent()->Velocity = UpdateVelocity(Char->GetMovementComponent()->Velocity) * 1.5f +
+	Char->GetMovementComponent()->Velocity = UpdateVelocity(Char->GetMovementComponent()->Velocity) * 1.f +
 		LinkedPortal->ForwardDirection->GetForwardVector() * AfterTeleportVelocity;
 	Char->GetMovementComponent()->UpdateComponentVelocity();
 
@@ -567,7 +567,7 @@ void APortalActor::TeleportObject(AActor* Actor)
 
 	if (PrimitiveComponent)
 	{
-		PrimitiveComponent->AddImpulse(UpdateVelocity(BeforeVelocity) * 1.5f +
+		PrimitiveComponent->AddImpulse(UpdateVelocity(BeforeVelocity) * 1.f +
 		LinkedPortal->ForwardDirection->GetForwardVector() * AfterTeleportVelocity);
 	}
 }

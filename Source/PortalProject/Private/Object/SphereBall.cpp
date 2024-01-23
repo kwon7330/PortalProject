@@ -83,6 +83,7 @@ void ASphereBall::MultiRPC_SpDetached_Implementation(APortalProjectCharacter* Ch
 {
 	SphereMeshComp->SetSimulatePhysics(true);
 	SphereMeshComp->DetachFromComponent(FDetachmentTransformRules::KeepRelativeTransform);
+	SphereMeshComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	bAttached = false;
 	Character->bHasCube = false;
 }
@@ -91,6 +92,7 @@ void ASphereBall::MultiRPC_SpAttached_Implementation(APortalProjectCharacter* Ch
 {
 	SphereMeshComp->SetSimulatePhysics(false);
 	SphereMeshComp->AttachToComponent(Character->AttachComp,FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+	SphereMeshComp->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	bAttached = true;
 	Character->bHasCube = true;
 }
