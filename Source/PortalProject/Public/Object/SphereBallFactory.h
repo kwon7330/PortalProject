@@ -7,6 +7,7 @@
 #include "GameFramework/Actor.h"
 #include "SphereBallFactory.generated.h"
 
+class AInteractButton;
 class ASphereBall;
 class UArrowComponent;
 
@@ -35,6 +36,8 @@ public:
 	UArrowComponent* ArrowComp;
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<ASphereBall> BallFactory;
+
+	
 	
 	void FallingBall();
 
@@ -44,4 +47,7 @@ public:
 
 	UFUNCTION(NetMulticast,Unreliable)
 	void MultiRPC_FallingBall();
+
+
+	void CheckButtonOverlap();
 };

@@ -27,6 +27,9 @@ public:
 
 
 	UPROPERTY(EditAnywhere)
+	USceneComponent* SceneComp;
+	
+	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* MeshComp;
 	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* SecondMeshComp;

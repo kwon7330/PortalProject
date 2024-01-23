@@ -53,4 +53,6 @@ public:
 	UFUNCTION(Server,Reliable)
 	void ServerRPC_EndOverlap();
 
+
+	bool bisOverlap;
 };

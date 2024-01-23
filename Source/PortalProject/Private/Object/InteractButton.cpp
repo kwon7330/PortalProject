@@ -48,6 +48,7 @@ void AInteractButton::Tick(float DeltaTime)
 void AInteractButton::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	bisOverlap= true;
 	auto Player = Cast<APortalProjectCharacter>(OtherActor);
 	if(Player != nullptr)
 	{
@@ -60,7 +61,7 @@ void AInteractButton::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor
 		else if(BallFactory)
 		{
 			// 만약 월드 안에 모든 버튼이 눌린다면 공을 떨군다.
-			BallFactory->FallingBall();
+			BallFactory->CheckButtonOverlap();
 		}
 	}
 }
@@ -68,12 +69,14 @@ void AInteractButton::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor
 void AInteractButton::EndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
+	 bisOverlap = false;
 	if(MovingFloor)
 	{
 		UE_LOG(LogTemp,Warning,TEXT("isMovingFloor"));
 		ServerRPC_EndOverlap();
 		//MovingFloor->Return();
 	}
+	
 }
 
 

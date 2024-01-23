@@ -8,7 +8,11 @@ ADoorActor::ADoorActor()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+	SceneComp = CreateDefaultSubobject<USceneComponent>("SceneComp");
+	SetRootComponent(SceneComp);
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>("MeshComp");
+	MeshComp -> SetupAttachment(SceneComp);
 	//(X=0.000000,Y=-60.000000,Z=45.000000)
 	MeshComp->SetRelativeLocation(FVector(0,-60,-45));
 	//(Pitch=90.000000,Yaw=0.000000,Roll=-0.000000)
@@ -16,13 +20,7 @@ ADoorActor::ADoorActor()
 	//(X=0.500000,Y=0.500000,Z=1.000000)
 	MeshComp->SetRelativeScale3D(FVector(0.5,0.5,1));
 	
-	SecondMeshComp = CreateDefaultSubobject<UStaticMeshComponent>("SecondMeshComp");
-	//(X=0.000000,Y=-60.000000,Z=45.000000)
-	SecondMeshComp->SetRelativeLocation(FVector(0,60,-45));
-	//(Pitch=90.000000,Yaw=0.000000,Roll=-0.000000)
-	SecondMeshComp->SetRelativeRotation(FRotator(90,0,0));
-	//(X=0.500000,Y=0.500000,Z=1.000000)
-	SecondMeshComp->SetRelativeScale3D(FVector(0.5,0.5,1));
+	
 
 	bReplicates = true;
 }
