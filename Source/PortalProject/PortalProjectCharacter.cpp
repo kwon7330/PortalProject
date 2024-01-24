@@ -19,7 +19,6 @@
 #include "Object/Portal_Bullet.h"
 #include "Object/Portal_Cube.h"
 #include "Object/Portal_PortalManager.h"
-#include "Object/Portal_Tablet.h"
 
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
@@ -167,72 +166,23 @@ void APortalProjectCharacter::LeftClickPortal(const FInputActionValue& Value)
 {
 	// 만약 컴퍼넌트의 주인이 플레이어 1 이라면 파란 색 포탈을 생성하고, 주인이 플레이어 2라면 주황색 포탈을 생성한다.
 	// 큐브를 들고있으면 총을 쏘지 못한다.
-	if(bHasCube == false)
+	if(bHasCube == true)
 	{
-		ServerRPC_LeftClick();
 		return;
-		
-		APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this,0);
-		if(PlayerController != nullptr)
-		{
-			auto PCM = UGameplayStatics::GetPlayerCameraManager(GetWorld(),0);
-			FHitResult HitInfo;
-			FVector StartPoint = PCM->GetCameraLocation();
-			FVector EndPoint = StartPoint + PlayerController->GetControlRotation().Vector() * 10000;
-			FCollisionQueryParams Params;
-			Params.AddIgnoredActor(this);
-			bool bHit = GetWorld()->LineTraceSingleByChannel(HitInfo,StartPoint,EndPoint,ECC_Visibility,Params);
-			DrawDebugLine(GetWorld(), StartPoint, EndPoint, FColor::Red, false, 2, 0, 1.0f);
-			if(bHit == true)
-			{
-				auto Tablets = Cast<APortal_Tablet>(HitInfo.GetActor());
-				if(Tablets != nullptr)
-				{
-					FTransform SpawnPoint = HitInfo.GetActor()->GetActorTransform();
-					APortal_Bullet* Bullet = GetWorld()->SpawnActorDeferred<APortal_Bullet>(BulletFactory,SpawnPoint);
-					Bullet->Type = EPortalType::Player1Blue;
-					UGameplayStatics::FinishSpawningActor(Bullet, SpawnPoint);
-				}
-			}
-		}
-		
 	}
+	ServerRPC_LeftClick();
 }
 
 void APortalProjectCharacter::RightClickPortal(const FInputActionValue& Value)
 {
 	// 만약 컴퍼넌트의 주인이 플레이어 1 이라면 보라 색 포탈을 생성하고, 주인이 플레이어 2라면 붉은색 포탈을 생성한다.
 	// 큐브를 들고있으면 총을 쏘지 못한다.
-	if(bHasCube == false)
+
+	if (bHasCube == true)
 	{
-		ServerRPC_RightClick();
 		return;
-		APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this,0);
-		if(PlayerController != nullptr)
-		{
-			auto PCM = UGameplayStatics::GetPlayerCameraManager(GetWorld(),0);
-			FHitResult HitInfo;
-			FVector StartPoint = PCM->GetCameraLocation();
-			FVector EndPoint = StartPoint + PlayerController->GetControlRotation().Vector() * 10000;
-			FCollisionQueryParams Params;
-			Params.AddIgnoredActor(this);
-			bool bHit = GetWorld()->LineTraceSingleByChannel(HitInfo,StartPoint,EndPoint,ECC_Visibility,Params);
-			DrawDebugLine(GetWorld(), StartPoint, EndPoint, FColor::Red, false, 5, 0, 1.0f);
-			if(bHit == true)
-			{
-				
-				auto Tablets = Cast<APortal_Tablet>(HitInfo.GetActor());
-				if(Tablets != nullptr)
-				{
-					FTransform SpawnPoint = HitInfo.GetActor()->GetActorTransform();
-					APortal_Bullet* Bullet = GetWorld()->SpawnActorDeferred<APortal_Bullet>(BulletFactory,SpawnPoint);
-					Bullet->Type = EPortalType::Player1Purple;
-					UGameplayStatics::FinishSpawningActor(Bullet, SpawnPoint);
-					
-				}
-			}
-		}
 	}
+	ServerRPC_RightClick();
 }
 
 

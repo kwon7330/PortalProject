@@ -306,7 +306,7 @@ void APortalActor::LinkWithOtherPortal()
 	const FVector OffDist = ForwardDirection->GetForwardVector() * OffsetAmount;
 	const FLinearColor OffsetDist = FLinearColor(OffDist.X, OffDist.Y, OffDist.Z, 0.f);
 	PortalMat->SetVectorParameterValue(TEXT("OffsetDistance"), OffsetDist);
-	LinkedPortal->PortalCamera->HiddenComponents.AddUnique(PortalVfxComp);
+	PortalCamera->HiddenComponents.AddUnique(LinkedPortal->PortalVfxComp);
 }
 
 void APortalActor::UnlinkPortal()
