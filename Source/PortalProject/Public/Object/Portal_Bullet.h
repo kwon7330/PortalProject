@@ -7,6 +7,7 @@
 #include "../PortalProject.h"
 #include "Portal_Bullet.generated.h"
 
+class UNiagaraComponent;
 class APortal_Tablet;
 class APortal_PortalManager;
 class APortal_PortalDemo;
@@ -37,7 +38,9 @@ public:
 	UStaticMeshComponent* MeshComp;
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Bullet")
 	UProjectileMovementComponent* ProjectileMovementComp;
-
+	UPROPERTY(EditAnywhere, Category = "Bullet")
+	UNiagaraComponent* TrailVfxComp;
+	
 	UPROPERTY(EditDefaultsOnly)
 	class UNiagaraSystem* BurstVFX;
 	

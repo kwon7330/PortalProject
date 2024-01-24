@@ -3,6 +3,7 @@
 
 #include "Object/Portal_Bullet.h"
 
+#include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "PortalActor.h"
 #include "Components/SphereComponent.h"
@@ -27,6 +28,9 @@ APortal_Bullet::APortal_Bullet()
 	ProjectileMovementComp -> InitialSpeed = 12000;
 	ProjectileMovementComp -> MaxSpeed = 12000;
 
+	TrailVfxComp = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Trail VFX Comp"));
+	TrailVfxComp->SetupAttachment(MeshComp);
+	
 	MeshComp->SetNotifyRigidBodyCollision(true);
 	
 	bReplicates = true;
@@ -50,6 +54,7 @@ void APortal_Bullet::BeginPlay()
 	UMaterialInstanceDynamic* BulletMeshMat = UKismetMaterialLibrary::CreateDynamicMaterialInstance(GetWorld(), MeshComp->GetMaterial(0));
 	BulletMeshMat->SetVectorParameterValue(TEXT("PortalColor"), *PortalColorMap.Find(Type));
 	MeshComp->SetMaterial(0, BulletMeshMat);
+	TrailVfxComp->SetVariableVec4(TEXT("TrailColor"), *PortalColorMap.Find(Type));
 }
 
 void APortal_Bullet::Tick(float DeltaTime)
@@ -73,7 +78,8 @@ void APortal_Bullet::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor*
 void APortal_Bullet::OnMeshHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	FVector NormalImpulse, const FHitResult& Hit)
 {
-	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BurstVFX, GetActorLocation());
+	UNiagaraComponent* Burst = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BurstVFX, GetActorLocation());
+	Burst->SetVariableVec4(TEXT("Color"), *PortalColorMap.Find(Type));
 	this->Destroy();
 }
 
