@@ -184,10 +184,6 @@ public:
 	UFUNCTION()
 	void ShootBullet(bool bIsLeftClick);
 	
-	
-	
-	
-	
 // =============== UI =========================
 public:
 	UPROPERTY(EditDefaultsOnly, Category = "UI")

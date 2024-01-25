@@ -37,11 +37,10 @@ public:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<ASphereBall> BallFactory;
 
-	
+	bool bBallPresent = false;
 	
 	void FallingBall();
-
-
+	
 	UFUNCTION(Server,Reliable)
 	void ServerRPC_FallingBall();
 

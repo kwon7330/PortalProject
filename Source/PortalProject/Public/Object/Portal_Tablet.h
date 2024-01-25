@@ -24,7 +24,6 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&) const override;
 
 	//=================================================================================================================================	
 
@@ -35,6 +34,6 @@ public:
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="WallSettings")
 	UArrowComponent* SpawnPoint;
 
-	UPROPERTY(EditAnywhere, Replicated)
+	UPROPERTY(EditAnywhere)
 	class APortalActor* PortalActor;
 };
