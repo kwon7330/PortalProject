@@ -131,6 +131,8 @@ void APortalActor::BeginPlay()
 
 	PlaneBox->OnComponentBeginOverlap.AddDynamic(this, &APortalActor::OnPlaneBoxBeginOverlap);
 	PlaneBox->OnComponentEndOverlap.AddDynamic(this, &APortalActor::OnPlaneBoxEndOverlap);
+	ActorDetection->OnComponentBeginOverlap.AddDynamic(this, &APortalActor::OnActorDetectionBeginOverlap);
+	ActorDetection->OnComponentEndOverlap.AddDynamic(this, &APortalActor::OnActorDetectionEndOverlap);
 
 	PRINTLOG(TEXT("END Owner: %s"), GetOwner() ? *GetOwner()->GetActorNameOrLabel(): TEXT("None"))
 }
@@ -149,6 +151,7 @@ void APortalActor::Tick(float DeltaTime)
 		//DrawDebugCamera(World, LinkedPortal->PortalCamera->GetComponentLocation(), LinkedPortal->PortalCamera->GetComponentRotation(),90.0, 2.f);
 	}
 	TickRecentlyTeleported(DeltaTime);
+	CheckDetectedActors();
 }
 
 void APortalActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -277,6 +280,7 @@ void APortalActor::OnActorDetectionBeginOverlap(UPrimitiveComponent* OverlappedC
 	{
 		return;
 	}
+	//PRINTLOG(TEXT("%s"), *OtherActor->GetActorNameOrLabel())
 
 	DetectedActors.AddUnique(OtherActor);
 }
@@ -334,6 +338,25 @@ void APortalActor::SetClipPlanes()
 	//UE_LOG(LogTemp, Warning, TEXT("CLIP BASE VECTOR: %.f %.f %.f"), ClipPlaneBase.X, ClipPlaneBase.Y, ClipPlaneBase.Z);
 	LinkedPortal->PortalCamera->ClipPlaneBase = ClipPlaneBase;
 	LinkedPortal->PortalCamera->ClipPlaneNormal = LinkedPortal->ForwardDirection->GetForwardVector();
+}
+
+void APortalActor::CheckDetectedActors()
+{
+	for (auto a: DetectedActors)
+	{
+		//float VelLength = a->GetVelocity().Length();
+		float Veldot = ForwardDirection->GetForwardVector().Dot(a->GetVelocity());
+		//PRINTLOG(TEXT("Length: %.f, Dot: %.f"), VelLength, Veldot);
+
+		if (Veldot < -600)
+		{
+			//PRINTLOG(TEXT("VEL!"))
+			for (auto b: CollisionIgnoreActors)
+			{
+				Cast<UPrimitiveComponent>(a->GetRootComponent())->MoveIgnoreActors.Add(b);
+			}
+		}
+	}
 }
 
 void APortalActor::UpdateSceneCaptureRecursive(const FVector& InLocation, const FRotator& InRotation)
@@ -453,7 +476,7 @@ void APortalActor::CheckViewportSize()
 
 void APortalActor::CheckIfShouldTeleport()
 {
-	TArray<AActor*> OverlappingActors;
+	TArray<AActor*> OverlappingActors; 
 	ActorDetection->GetOverlappingActors(OverlappingActors);
 
 	for (auto Itr = OverlappingActors.CreateIterator(); Itr; ++Itr)
@@ -479,7 +502,7 @@ void APortalActor::CheckIfShouldTeleport()
 		FVector ActorLoc = OverlappingActors[0]->GetActorLocation();
 		if (APortalProjectCharacter* Chara = Cast<APortalProjectCharacter>(OverlappingActors[0]))
 		{
-			bool bCross = CheckIfPointCrossingPortal(ActorLoc, PortalPlane->GetComponentLocation(), ForwardDirection->GetForwardVector());
+			bool bCross = CheckIfPointCrossingPortal(ActorLoc, PortalPlane->GetComponentLocation() + ForwardDirection->GetForwardVector() * 2, ForwardDirection->GetForwardVector());
 
 			if (bCross)
 			{
@@ -527,7 +550,7 @@ bool APortalActor::CheckIfPointCrossingPortal(const FVector& Point, const FVecto
 void APortalActor::TeleportChar(ACharacter* Char)
 {
 
-	PRINTLOG(TEXT("Teleported"))
+	//PRINTLOG(TEXT("Teleported"))
 	
 	// Teleport the character.
 	Char->SetActorLocationAndRotation(UpdateLocation(Char->GetActorLocation()), UpdateRotation(Char->GetActorRotation()));

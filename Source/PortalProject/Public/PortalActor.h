@@ -131,8 +131,8 @@ public:
 	
 	void LinkWithOtherPortal();
 	void UnlinkPortal();
-	
 	void SetClipPlanes();
+	void CheckDetectedActors();
 	
 	void UpdateSceneCaptureRecursive(const FVector& InLocation, const FRotator& InRotation);
 	FVector UpdateLocation(const FVector& OldLocation) const;
