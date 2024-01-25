@@ -82,6 +82,7 @@ void ASphereBallFactory::ServerRPC_CheckButtonOverlap_Implementation()
 		FTransform SpawnPoint = ArrowComp->GetComponentTransform();
 		SpawnPoint.SetScale3D(FVector(1,1,1));
 		GetWorld()->SpawnActor<ASphereBall>(BallFactory,SpawnPoint);
+		// 공이 스폰되면 더이상 스폰안되도록 만들어야한다.
 	}
 	else
 	{
