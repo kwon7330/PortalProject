@@ -135,7 +135,6 @@ void APortalActor::BeginPlay()
 	PlaneBox->OnComponentEndOverlap.AddDynamic(this, &APortalActor::OnPlaneBoxEndOverlap);
 	ActorDetection->OnComponentBeginOverlap.AddDynamic(this, &APortalActor::OnActorDetectionBeginOverlap);
 	ActorDetection->OnComponentEndOverlap.AddDynamic(this, &APortalActor::OnActorDetectionEndOverlap);
-	BacksideDetection->OnComponentBeginOverlap.AddDynamic(this, &APortalActor::OnBackSideDetectionBeginOverlap);
 
 	FVector Forward = ForwardDirection->GetForwardVector();
 	PRINTLOG(TEXT("Forward Vector: %.f, %.f, %.f"), Forward.X, Forward.Y, Forward.Z)
@@ -296,16 +295,8 @@ void APortalActor::OnActorDetectionEndOverlap(UPrimitiveComponent* OverlappedCom
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
 	DetectedActors.RemoveSwap(OtherActor);
-}
 
-void APortalActor::OnBackSideDetectionBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	if (APortalProjectCharacter* Char = Cast<APortalProjectCharacter>(OtherActor); Char && RecentlyTeleported.Contains(Char))
-	{
-		PRINTLOG(TEXT("NOT TELEPORTED"))
-		TeleportChar(Char);
-	}
+	OverlappedComponent->ClearMoveIgnoreActors();
 }
 
 void APortalActor::LinkWithOtherPortal()
@@ -327,12 +318,14 @@ void APortalActor::LinkWithOtherPortal()
 	const FVector OffDist = ForwardDirection->GetForwardVector() * OffsetAmount;
 	const FLinearColor OffsetDist = FLinearColor(OffDist.X, OffDist.Y, OffDist.Z, 0.f);
 	PortalMat->SetVectorParameterValue(TEXT("OffsetDistance"), OffsetDist);
+	PortalPlane->SetMaterial(0, PortalMat);
 	PortalCamera->HiddenComponents.AddUnique(LinkedPortal->PortalVfxComp);
 }
 
 void APortalActor::UnlinkPortal()
 {
 	this->LinkedPortal = nullptr;
+	PortalPlane->SetMaterial(0, PortalBaseMat);
 	PortalCamera->ClearHiddenComponents();
 }
 
@@ -370,7 +363,16 @@ void APortalActor::CheckDetectedActors()
 			//PRINTLOG(TEXT("VEL!"))
 			for (auto b: CollisionIgnoreActors)
 			{
-				Cast<UPrimitiveComponent>(a->GetRootComponent())->MoveIgnoreActors.Add(b);
+				auto root = Cast<UPrimitiveComponent>(a->GetRootComponent());
+				root->MoveIgnoreActors.Add(b);
+
+				if (ACharacter* Char = Cast<ACharacter>(a))
+				{
+					PRINTLOG(TEXT("Adding Force!"))
+					FVector TowardsPortal = ForwardDirection->GetComponentLocation() - b->GetActorLocation();
+					TowardsPortal.Normalize();
+					Char->GetCharacterMovement()->AddForce(TowardsPortal * 5000);
+				}
 			}
 
 			CollisionModifiedActors.AddUnique(a);
@@ -590,6 +592,8 @@ void APortalActor::TeleportChar(ACharacter* Char)
 	
 	// Teleport the character.
 	Char->SetActorLocationAndRotation(UpdateLocation(Char->GetActorLocation()), UpdateRotation(Char->GetActorRotation()), false, nullptr, ETeleportType::TeleportPhysics);
+	//Char->SetActorLocationAndRotationCha, UpdateRotation(Char->GetActorRotation()), false, nullptr, ETeleportType::TeleportPhysics);
+
 	
 	RecentlyTeleported.Add(Char, 0.f);
 	LinkedPortal->RecentlyTeleported.Add(Char, 0.f);
