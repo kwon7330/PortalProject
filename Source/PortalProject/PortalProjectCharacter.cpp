@@ -13,6 +13,7 @@
 #include "AI/Portal_Turret.h"
 #include "Blueprint/UserWidget.h"
 #include "Engine/LocalPlayer.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
@@ -349,6 +350,10 @@ void APortalProjectCharacter::GetLifetimeReplicatedProps(TArray<FLifetimePropert
 void APortalProjectCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+
+	FString VelText = GetCharacterMovement()->GetLastUpdateVelocity().ToString();
+	
+	GEngine->AddOnScreenDebugMessage(0, -1, FColor::White, VelText, true, FVector2D(2, 2));
 }
 
 

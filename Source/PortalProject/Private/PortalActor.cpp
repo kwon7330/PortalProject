@@ -13,7 +13,9 @@
 #include "Components/SceneCaptureComponent2D.h"
 #include "Engine/StaticMeshActor.h"
 #include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PawnMovementComponent.h"
+#include "GameFramework/PhysicsVolume.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMaterialLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -133,7 +135,10 @@ void APortalActor::BeginPlay()
 	PlaneBox->OnComponentEndOverlap.AddDynamic(this, &APortalActor::OnPlaneBoxEndOverlap);
 	ActorDetection->OnComponentBeginOverlap.AddDynamic(this, &APortalActor::OnActorDetectionBeginOverlap);
 	ActorDetection->OnComponentEndOverlap.AddDynamic(this, &APortalActor::OnActorDetectionEndOverlap);
+	BacksideDetection->OnComponentBeginOverlap.AddDynamic(this, &APortalActor::OnBackSideDetectionBeginOverlap);
 
+	FVector Forward = ForwardDirection->GetForwardVector();
+	PRINTLOG(TEXT("Forward Vector: %.f, %.f, %.f"), Forward.X, Forward.Y, Forward.Z)
 	PRINTLOG(TEXT("END Owner: %s"), GetOwner() ? *GetOwner()->GetActorNameOrLabel(): TEXT("None"))
 }
 
@@ -158,6 +163,8 @@ void APortalActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
 
+	ResetCollisionIgnoredActors();
+	
 	switch (Type) {
 	case EPortalType::Player1Blue:
 		if (PortalManager->PurplePortal)
@@ -220,7 +227,7 @@ void APortalActor::OnPlaneBoxBeginOverlap(UPrimitiveComponent* OverlappedCompone
 		return;
 	}
 
-	PRINTLOG(TEXT("Begin Overlap %s"), *OtherActor->GetActorNameOrLabel());
+	//PRINTLOG(TEXT("Begin Overlap %s"), *OtherActor->GetActorNameOrLabel());
 
 	UPrimitiveComponent* PrimitiveComponent = Cast<UPrimitiveComponent>(OtherActor->GetRootComponent());
 	if (PrimitiveComponent)
@@ -291,6 +298,16 @@ void APortalActor::OnActorDetectionEndOverlap(UPrimitiveComponent* OverlappedCom
 	DetectedActors.RemoveSwap(OtherActor);
 }
 
+void APortalActor::OnBackSideDetectionBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (APortalProjectCharacter* Char = Cast<APortalProjectCharacter>(OtherActor); Char && RecentlyTeleported.Contains(Char))
+	{
+		PRINTLOG(TEXT("NOT TELEPORTED"))
+		TeleportChar(Char);
+	}
+}
+
 void APortalActor::LinkWithOtherPortal()
 {
 	if (!LinkedPortal)
@@ -355,6 +372,19 @@ void APortalActor::CheckDetectedActors()
 			{
 				Cast<UPrimitiveComponent>(a->GetRootComponent())->MoveIgnoreActors.Add(b);
 			}
+
+			CollisionModifiedActors.AddUnique(a);
+		}
+	}
+}
+
+void APortalActor::ResetCollisionIgnoredActors()
+{
+	for (auto a: CollisionModifiedActors)
+	{
+		for (auto b: CollisionIgnoreActors)
+		{
+			Cast<UPrimitiveComponent>(a->GetRootComponent())->IgnoreActorWhenMoving(b, false);
 		}
 	}
 }
@@ -447,12 +477,18 @@ FRotator APortalActor::UpdateRotation(const FRotator& OldRotation) const
 
 FVector APortalActor::UpdateVelocity(const FVector& OldVelocity) const
 {
+	PRINTLOG(TEXT("OLD VECTOR: %1.f, %1.f, %1.f"), OldVelocity.X, OldVelocity.Y, OldVelocity.Z)
+	
 	FVector Normalized = OldVelocity.GetSafeNormal();
+
+	PRINTLOG(TEXT("NORMAL: %1.f, %1.f, %1.f"), Normalized.X, Normalized.Y, Normalized.Z);
+	
 	Normalized = UKismetMathLibrary::InverseTransformDirection(GetActorTransform(), Normalized);
 	Normalized = UKismetMathLibrary::MirrorVectorByNormal(Normalized, FVector(1, 0, 0));
 	Normalized = UKismetMathLibrary::MirrorVectorByNormal(Normalized, FVector(0, 1, 0));
 	Normalized = UKismetMathLibrary::TransformDirection(LinkedPortal->GetActorTransform(), Normalized);
 
+	
 	return OldVelocity.Length() * Normalized;
 }
 
@@ -492,15 +528,15 @@ void APortalActor::CheckIfShouldTeleport()
 		return;
 	}
 
-	if (OverlappingActors[0])
+	for (AActor* OverlappedActor : OverlappingActors)
 	{
-		if (RecentlyTeleported.Contains(OverlappingActors[0]))
+		if (RecentlyTeleported.Contains(OverlappedActor))
 		{
 			return;
 		}
 		//UE_LOG(LogTemp, Warning, TEXT("%s"), *OverlappingActors[0]->GetActorNameOrLabel())
-		FVector ActorLoc = OverlappingActors[0]->GetActorLocation();
-		if (APortalProjectCharacter* Chara = Cast<APortalProjectCharacter>(OverlappingActors[0]))
+		FVector ActorLoc = OverlappedActor->GetActorLocation();
+		if (APortalProjectCharacter* Chara = Cast<APortalProjectCharacter>(OverlappedActor))
 		{
 			bool bCross = CheckIfPointCrossingPortal(ActorLoc, PortalPlane->GetComponentLocation() + ForwardDirection->GetForwardVector() * 2, ForwardDirection->GetForwardVector());
 
@@ -515,14 +551,14 @@ void APortalActor::CheckIfShouldTeleport()
 		bool bCross = CheckIfPointCrossingPortal(ActorLoc, PortalPlane->GetComponentLocation(), ForwardDirection->GetForwardVector());
 		if (bCross)
 		{
-			ACharacter* Char = Cast<ACharacter>(OverlappingActors[0]);
+			ACharacter* Char = Cast<ACharacter>(OverlappedActor);
 			if (Char)
 			{
 				TeleportChar(Char);
 			}
 			else
 			{
-				TeleportObject(OverlappingActors[0]);
+				TeleportObject(OverlappedActor);
 			}
 		}
 	}
@@ -553,11 +589,11 @@ void APortalActor::TeleportChar(ACharacter* Char)
 	//PRINTLOG(TEXT("Teleported"))
 	
 	// Teleport the character.
-	Char->SetActorLocationAndRotation(UpdateLocation(Char->GetActorLocation()), UpdateRotation(Char->GetActorRotation()));
-
+	Char->SetActorLocationAndRotation(UpdateLocation(Char->GetActorLocation()), UpdateRotation(Char->GetActorRotation()), false, nullptr, ETeleportType::TeleportPhysics);
+	
 	RecentlyTeleported.Add(Char, 0.f);
 	LinkedPortal->RecentlyTeleported.Add(Char, 0.f);
-
+	
 	// Set the new control rotation.
 	APlayerController* Cont = Cast<APlayerController>(Char->GetController());
 	if (Cont)
@@ -568,16 +604,41 @@ void APortalActor::TeleportChar(ACharacter* Char)
 	}	
 
 	// Update the velocity.
-	Char->GetMovementComponent()->Velocity = UpdateVelocity(Char->GetMovementComponent()->Velocity) * 1.f +
-		LinkedPortal->ForwardDirection->GetForwardVector() * AfterTeleportVelocity;
-	Char->GetMovementComponent()->UpdateComponentVelocity();
 
+	check(LinkedPortal)
+	auto MoveComp = Char->GetCharacterMovement();
+	//FVector NewVelocity = UpdateVelocity(Char->GetMovementComponent()->Velocity) +
+	//	LinkedPortal->ForwardDirection->GetForwardVector() * AfterTeleportVelocity;
+
+	FVector PreVelocity = MoveComp->GetLastUpdateVelocity();
+	if (PreVelocity.IsNearlyZero())
+	{
+		PreVelocity = FVector(0, 0, -3900);
+	}
+	
+	FVector UpdatedVelocity = UpdateVelocity(PreVelocity);
+	PRINTLOG(TEXT("Updated Velocity: %.1f, %.1f, %.1f"), UpdatedVelocity.X, UpdatedVelocity.Y, UpdatedVelocity.Z)
+
+	FVector TV = LinkedPortal->ForwardDirection->GetForwardVector() * AfterTeleportVelocity;
+	PRINTLOG(TEXT("TVelocity: %.1f %.1f %.1f"), TV.X, TV.Y, TV.Z);
+
+	FVector NewVelocity = UpdatedVelocity + TV;
+	NewVelocity = NewVelocity.BoundToCube(3900.f);
+	PRINTLOG(TEXT("New Velocity: %.1f %.1f %.1f"), NewVelocity.X, NewVelocity.Y, NewVelocity.Z);
+	
+	MoveComp->Velocity = NewVelocity;
+	MoveComp->UpdateComponentVelocity();
+
+	FVector NewVel = MoveComp->Velocity;
+	PRINTLOG(TEXT("New MoveComp Velocity: %.1f %.1f %.1f"), NewVel.X, NewVel.Y, NewVel.Z);
+
+	
 	// TODO: Smooth Orientation
 	// Orient the player.
 	Char->GetCapsuleComponent()->SetWorldRotation(FRotator::ZeroRotator);
 
 	// Cut this frame
-	//UGameplayStatics::GetPlayerCameraManager(World, 0)->SetGameCameraCutThisFrame();
+	UGameplayStatics::GetPlayerCameraManager(World, 0)->SetGameCameraCutThisFrame();
 	//PortalCamera->bCameraCutThisFrame = true;
 }
 

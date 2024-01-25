@@ -122,17 +122,24 @@ public:
 
 	UPROPERTY(VisibleAnywhere)
 	TArray<AActor*> DetectedActors;
+
+	UPROPERTY(VisibleAnywhere)
+	TArray<AActor*> CollisionModifiedActors;
 	
 	UFUNCTION()
 	void OnActorDetectionBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	UFUNCTION()
 	void OnActorDetectionEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	UFUNCTION()
+	void OnBackSideDetectionBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	
 	void LinkWithOtherPortal();
 	void UnlinkPortal();
 	void SetClipPlanes();
 	void CheckDetectedActors();
+	void ResetCollisionIgnoredActors();
 	
 	void UpdateSceneCaptureRecursive(const FVector& InLocation, const FRotator& InRotation);
 	FVector UpdateLocation(const FVector& OldLocation) const;
@@ -141,7 +148,7 @@ public:
 	void CheckViewportSize();
 	void CheckIfShouldTeleport();
 	bool CheckIfPointCrossingPortal(const FVector& Point, const FVector& PortalLocation, const FVector& PortalNormal);
-	
+
 	void TeleportChar(ACharacter* Char);
 	void TeleportObject(AActor* Actor);
 	
