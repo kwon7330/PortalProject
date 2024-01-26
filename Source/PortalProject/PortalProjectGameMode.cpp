@@ -45,13 +45,15 @@ void APortalProjectGameMode::HandleStartingNewPlayer_Implementation(APlayerContr
 	// 플레이어마다 스폰 포인트 다르게하기
 	FTransform SpawnTransform;
 	
-	UE_LOG(LogTemp, Warning, TEXT("%s"), *PlayerStarts[0]->GetActorNameOrLabel())
+	//UE_LOG(LogTemp, Warning, TEXT("%s"), *PlayerStarts[0]->GetActorNameOrLabel())
 	SpawnTransform = PlayerStarts[0]->GetActorTransform();
+	PBodyStart = PlayerStarts[0];
 
 	if (PBody && PlayerStarts.Num() > 1)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("%s"), *PlayerStarts[1]->GetActorNameOrLabel())
+		//UE_LOG(LogTemp, Warning, TEXT("%s"), *PlayerStarts[1]->GetActorNameOrLabel())
 		SpawnTransform = PlayerStarts[1]->GetActorTransform();
+		AtlasStart = PlayerStarts[1];
 	}
 	
 	SpawnTransform.SetScale3D(FVector::OneVector);
@@ -73,3 +75,46 @@ void APortalProjectGameMode::HandleStartingNewPlayer_Implementation(APlayerContr
 	UGameplayStatics::FinishSpawningActor(NewChar, SpawnTransform);
 	NewPlayer->Possess(NewChar);
 }
+
+AActor* APortalProjectGameMode::FindPlayerStart_Implementation(AController* Player, const FString& IncomingName)
+{
+
+	if (!AtlasStart || !PBodyStart)
+	{
+		TArray<AActor*> PlayerStarts;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerStart::StaticClass(), PlayerStarts);
+
+		AtlasStart = PlayerStarts[0];
+		PBodyStart = PlayerStarts[1];
+	}
+	
+	if (Player == Atlas)
+	{
+		check(AtlasStart);
+		return AtlasStart;
+	}
+
+	check(PBodyStart);
+	return PBodyStart;
+}
+
+APawn* APortalProjectGameMode::SpawnDefaultPawnFor_Implementation(AController* NewPlayer, AActor* StartSpot)
+{
+	PRINTLOG(TEXT("SPAWN CALLED"))
+	APawn* Pawn = Super::SpawnDefaultPawnFor_Implementation(NewPlayer, StartSpot);
+	APortalProjectCharacter* Char = Cast<APortalProjectCharacter>(Pawn);
+
+	check(Char);
+	
+	if (NewPlayer == Atlas)
+	{
+		Char->PlayerType = EPlayerType::Atlas;
+	}
+	else
+	{
+		Char->PlayerType = EPlayerType::PBody;
+	}
+	
+	return Char;
+}
+

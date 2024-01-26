@@ -55,7 +55,7 @@ void UPortal_GameInstance::OnCreateSessionComplete(FName SessionName, bool bWasS
 	UE_LOG(LogTemp,Warning,TEXT("OncreateSessionComplete!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"))
 	if(bWasSuccessful)
 	{
-		GetWorld()->ServerTravel(TEXT("/Game/Portal/KDJ/Maps/Room01-4_SM_KDJ?listen"));
+		GetWorld()->ServerTravel(TEXT("/Game/Portal/KHO/Maps/Room02-1_KHO?listen"));
 	}
 }
 

@@ -6,6 +6,11 @@
 #include "Components/Image.h"
 #include "PortalProject/PortalProjectCharacter.h"
 
+void UPlayerUI::PlayDamageAnim()
+{
+	PlayAnimation(DamageAnim);
+}
+
 void UPlayerUI::AddedPortal(EPortalType Portal)
 {
 	bool bIsLeft = true;

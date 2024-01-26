@@ -10,10 +10,10 @@
 #include "InputActionValue.h"
 #include "PlayerMove.h"
 #include "PlayerUI.h"
+#include "PortalProjectGameMode.h"
 #include "AI/Portal_Turret.h"
 #include "Blueprint/UserWidget.h"
 #include "Engine/LocalPlayer.h"
-#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
@@ -103,8 +103,8 @@ void APortalProjectCharacter::BeginPlay()
 	if (PM && IsLocallyControlled())
 	{
 		PRINTLOG(TEXT("FOUND"))
-		PM->OnPortalCreated.AddDynamic(this, &APortalProjectCharacter::OnPortalCreated);
-		PM->OnPortalDestroyed.AddDynamic(this, &APortalProjectCharacter::OnPortalDestroyed);
+		PM->OnPortalCreated.AddUniqueDynamic(this, &APortalProjectCharacter::OnPortalCreated);
+		PM->OnPortalDestroyed.AddUniqueDynamic(this, &APortalProjectCharacter::OnPortalDestroyed);
 	}
 }
 
@@ -329,6 +329,52 @@ void APortalProjectCharacter::OnPortalDestroyed(EPortalType Type)
 	PlayerUI->RemovedPortal(Type);
 }
 
+void APortalProjectCharacter::SetHP(const float Value)
+{
+	if (HasAuthority() && Value < HP)
+	{
+		OnPortalCharDamaged();
+	}
+
+	HP = Value;
+}
+
+void APortalProjectCharacter::OnRep_HP()
+{
+	OnPortalCharDamaged();
+}
+
+void APortalProjectCharacter::OnPortalCharDamaged()
+{
+	if (IsLocallyControlled())
+	{
+		PlayerUI->PlayDamageAnim();
+	}
+
+	if (HP <= 0)
+	{
+		OnDeath();		
+	}
+}
+
+void APortalProjectCharacter::OnDeath()
+{
+	APortal_PortalManager* Manager = Cast<APortal_PortalManager>(UGameplayStatics::GetActorOfClass(GetWorld(), APortal_PortalManager::StaticClass()));
+	if (Manager)
+	{
+		Manager->OnPlayerFizzled(PlayerType);
+	}
+
+	if (HasAuthority())
+	{
+		AController* PC = GetController();
+		PC->UnPossess();
+		GetWorld()->GetAuthGameMode<APortalProjectGameMode>()->RestartPlayer(PC);
+	}
+	
+	Destroy();
+}
+
 void APortalProjectCharacter::Landed(const FHitResult& Hit)
 {
 	Super::Landed(Hit);
@@ -337,6 +383,38 @@ void APortalProjectCharacter::Landed(const FHitResult& Hit)
 	{
 		Root->ClearMoveIgnoreActors();
 		Root->ClearMoveIgnoreComponents();
+	}
+}
+
+void APortalProjectCharacter::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+
+	if (APlayerController* PlayerController = Cast<APlayerController>(Controller); IsLocallyControlled() && PlayerController)
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		{
+			Subsystem->AddMappingContext(DefaultMappingContext, 0);
+		}
+		
+		GetMesh()->SetVisibleInSceneCaptureOnly(true);
+	}
+
+	// Create UI
+
+	if (IsLocallyControlled() && !PlayerUI)
+	{
+		checkf(PlayerUIClass, TEXT("Player UI 클래스가 지정되지 않음"));
+		PlayerUI = CreateWidget<UPlayerUI>(GetWorld(), PlayerUIClass);
+		PlayerUI->AddToViewport();	
+	}
+	
+	APortal_PortalManager* PM = Cast<APortal_PortalManager>(UGameplayStatics::GetActorOfClass(GetWorld(), APortal_PortalManager::StaticClass()));
+	if (PM && IsLocallyControlled())
+	{
+		PRINTLOG(TEXT("FOUND"))
+		PM->OnPortalCreated.AddUniqueDynamic(this, &APortalProjectCharacter::OnPortalCreated);
+		PM->OnPortalDestroyed.AddUniqueDynamic(this, &APortalProjectCharacter::OnPortalDestroyed);
 	}
 }
 
@@ -356,15 +434,15 @@ void APortalProjectCharacter::GetLifetimeReplicatedProps(TArray<FLifetimePropert
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(APortalProjectCharacter, bHasCube);
 	DOREPLIFETIME(APortalProjectCharacter, PlayerType);
+	DOREPLIFETIME(APortalProjectCharacter, HP);
 }
 
 void APortalProjectCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	FString VelText = GetCharacterMovement()->GetLastUpdateVelocity().ToString();
-	
-	GEngine->AddOnScreenDebugMessage(0, -1, FColor::White, VelText, true, FVector2D(2, 2));
+	//FString VelText = GetCharacterMovement()->GetLastUpdateVelocity().ToString();
+	//GEngine->AddOnScreenDebugMessage(0, -1, FColor::White, VelText, true, FVector2D(2, 2));
 }
 
 

@@ -21,6 +21,12 @@ public:
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	UImage* RightPortalIndicator;
 
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidgetAnim), Transient)
+	UWidgetAnimation* DamageAnim;
+
+	UFUNCTION()
+	void PlayDamageAnim();
+
 	UPROPERTY(BlueprintReadWrite)
 	UTexture2D* LeftBlank;
 

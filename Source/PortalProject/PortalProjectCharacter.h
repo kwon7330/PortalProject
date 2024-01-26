@@ -197,7 +197,27 @@ public:
 
 	UFUNCTION()
 	void OnPortalDestroyed(EPortalType Type);
+
+// ================================================
+
+private:
+	UPROPERTY(ReplicatedUsing = "OnRep_HP")
+	float HP {2.f};
+	
+public:
+	float GetHP() const { return HP; };
+	void SetHP (const float Value);
+
+	UFUNCTION()
+	void OnRep_HP();
+	
+	UFUNCTION()
+	void OnPortalCharDamaged();
+
+	UFUNCTION()
+	void OnDeath();
 	
 	virtual void Landed(const FHitResult& Hit) override;
+	virtual void PossessedBy(AController* NewController) override;
 };
 
