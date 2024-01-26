@@ -53,6 +53,8 @@ void AInteractButton::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor
 	auto Player = Cast<APortalProjectCharacter>(OtherActor);
 	if(Player != nullptr)
 	{
+		OnButtonStatusChanged.Broadcast(true);
+		
 		if(MovingFloor)
 		{
 			UE_LOG(LogTemp,Warning,TEXT("isMovingFloor"));
@@ -71,14 +73,13 @@ void AInteractButton::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor
 void AInteractButton::EndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	 bisOverlap = false;
+	bisOverlap = false;
+	OnButtonStatusChanged.Broadcast(false);
 	if(MovingFloor)
 	{
 		UE_LOG(LogTemp,Warning,TEXT("isMovingFloor"));
 		ServerRPC_EndOverlap();
-		
 	}
-	
 }
 
 
@@ -106,5 +107,4 @@ void AInteractButton::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(AInteractButton, bisOverlap);
-	
 }

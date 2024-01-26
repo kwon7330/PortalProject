@@ -7,9 +7,12 @@
 #include "GameFramework/Actor.h"
 #include "InteractButton.generated.h"
 
+class AIndicatorLight;
 class ASphereBallFactory;
 class AMovingFloor;
 class UBoxComponent;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FButtonStatusChanged, bool, bButtonStatus);
 
 UCLASS()
 class PORTALPROJECT_API AInteractButton : public AActor
@@ -28,13 +31,12 @@ public:
 	
 	virtual void Tick(float DeltaTime) override;
 
+	FButtonStatusChanged OnButtonStatusChanged;
 
 	UPROPERTY(VisibleDefaultsOnly)
 	UBoxComponent* Trigger;
 	UPROPERTY(VisibleDefaultsOnly)
 	UStaticMeshComponent* ButtonMesh;
-
-
 
 	UPROPERTY(EditAnywhere)
 	ASphereBallFactory* BallFactory;
