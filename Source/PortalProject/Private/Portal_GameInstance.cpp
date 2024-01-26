@@ -38,8 +38,8 @@ void UPortal_GameInstance::CreateMySession(const FString RoomName, const int32 P
 	//SessionInterface->SendSessionInviteToFriend()
 	//const FUniqueNetId& LocalUserId, FName SessionName, const FUniqueNetId& Friend
 	SessionSettings.bUsesPresence = true;
-	SessionSettings.bAllowJoinInProgress = false;
-	SessionSettings.bAllowJoinViaPresence = false;
+	SessionSettings.bAllowJoinInProgress = true;
+	SessionSettings.bAllowJoinViaPresence = true;
 	SessionSettings.NumPublicConnections = PlayerCount;
 
 	SessionSettings.Set(FName("Room_Name"),RoomName,EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
@@ -55,7 +55,7 @@ void UPortal_GameInstance::OnCreateSessionComplete(FName SessionName, bool bWasS
 	UE_LOG(LogTemp,Warning,TEXT("OncreateSessionComplete!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"))
 	if(bWasSuccessful)
 	{
-		GetWorld()->ServerTravel(TEXT("/Game/Portal/KSE/Maps/NewMap?Listen'"));
+		GetWorld()->ServerTravel(TEXT("/Game/Portal/KDJ/Maps/Room01-4_SM_KDJ?listen"));
 	}
 }
 
@@ -119,6 +119,9 @@ void UPortal_GameInstance::OnJoinSessionComplete(FName SessionName, EOnJoinSessi
 
 		FString URL;
 		SessionInterface->GetResolvedConnectString(SessionName,URL);
+
+					UE_LOG(LogTemp,Warning,TEXT("URL : %s"), *URL);
+
 
 		if(URL.IsEmpty() == false)
 		{
