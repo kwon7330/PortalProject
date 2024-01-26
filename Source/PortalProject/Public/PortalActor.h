@@ -125,6 +125,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere)
 	TArray<AActor*> CollisionModifiedActors;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	TSubclassOf<class ADummyPortal> DummyPortalClass;
 	
 	UFUNCTION()
 	void OnActorDetectionBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);

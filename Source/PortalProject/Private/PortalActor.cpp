@@ -3,6 +3,8 @@
 
 #include "PortalActor.h"
 
+#include "DummyPortal.h"
+#include "FCTween.h"
 #include "NiagaraComponent.h"
 #include "PortalableObject.h"
 #include "Blueprint/WidgetLayoutLibrary.h"
@@ -70,6 +72,8 @@ APortalActor::APortalActor()
 	// Set up the scene capture 2D.
 	PortalCamera->bOverride_CustomNearClippingPlane = true;
 	PortalCamera->CustomNearClippingPlane = 1.f;
+
+	PortalCamera->SetUsingAbsoluteScale(true);
 	
 	// Set the composite mode to composite for Recursive Rendering
 	PortalCamera->CompositeMode = SCCM_Composite;
@@ -136,8 +140,14 @@ void APortalActor::BeginPlay()
 	ActorDetection->OnComponentBeginOverlap.AddDynamic(this, &APortalActor::OnActorDetectionBeginOverlap);
 	ActorDetection->OnComponentEndOverlap.AddDynamic(this, &APortalActor::OnActorDetectionEndOverlap);
 
-	FVector Forward = ForwardDirection->GetForwardVector();
-	PRINTLOG(TEXT("Forward Vector: %.f, %.f, %.f"), Forward.X, Forward.Y, Forward.Z)
+	FCTween::Play(0, 1,
+		[&](const float T)
+		{
+			SetActorScale3D(FVector::OneVector * T);
+		},
+		0.5);
+
+	
 	PRINTLOG(TEXT("END Owner: %s"), GetOwner() ? *GetOwner()->GetActorNameOrLabel(): TEXT("None"))
 }
 
@@ -163,6 +173,14 @@ void APortalActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	Super::EndPlay(EndPlayReason);
 
 	ResetCollisionIgnoredActors();
+	
+	FTransform SpawnTransform = GetActorTransform();
+	SpawnTransform.SetScale3D(FVector::OneVector);
+	ADummyPortal* Dummy = GetWorld()->SpawnActorDeferred<ADummyPortal>(DummyPortalClass, SpawnTransform, nullptr,
+	                                                                   nullptr,
+	                                                                   ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
+	Dummy->Type = Type;
+	UGameplayStatics::FinishSpawningActor(Dummy, SpawnTransform);
 	
 	switch (Type) {
 	case EPortalType::Player1Blue:
@@ -358,7 +376,7 @@ void APortalActor::CheckDetectedActors()
 		float Veldot = ForwardDirection->GetForwardVector().Dot(a->GetVelocity());
 		//PRINTLOG(TEXT("Length: %.f, Dot: %.f"), VelLength, Veldot);
 
-		if (Veldot < -600)
+		if (Veldot < -700)
 		{
 			//PRINTLOG(TEXT("VEL!"))
 			for (auto b: CollisionIgnoreActors)
@@ -591,9 +609,16 @@ void APortalActor::TeleportChar(ACharacter* Char)
 	//PRINTLOG(TEXT("Teleported"))
 	
 	// Teleport the character.
-	Char->SetActorLocationAndRotation(UpdateLocation(Char->GetActorLocation()), UpdateRotation(Char->GetActorRotation()), false, nullptr, ETeleportType::TeleportPhysics);
-	//Char->SetActorLocationAndRotationCha, UpdateRotation(Char->GetActorRotation()), false, nullptr, ETeleportType::TeleportPhysics);
-
+	if (Char->GetVelocity().Size() > 601)
+	{
+		Char->SetActorLocationAndRotation(LinkedPortal->ForwardDirection->GetComponentLocation() +
+			LinkedPortal->ForwardDirection->GetForwardVector() * 2, UpdateRotation(Char->GetActorRotation()),
+			false, nullptr, ETeleportType::TeleportPhysics);
+	}
+	else
+	{
+		Char->SetActorLocationAndRotation(UpdateLocation(Char->GetActorLocation()), UpdateRotation(Char->GetActorRotation()), false, nullptr, ETeleportType::TeleportPhysics);
+	}
 	
 	RecentlyTeleported.Add(Char, 0.f);
 	LinkedPortal->RecentlyTeleported.Add(Char, 0.f);
