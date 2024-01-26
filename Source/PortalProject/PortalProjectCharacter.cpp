@@ -329,6 +329,17 @@ void APortalProjectCharacter::OnPortalDestroyed(EPortalType Type)
 	PlayerUI->RemovedPortal(Type);
 }
 
+void APortalProjectCharacter::Landed(const FHitResult& Hit)
+{
+	Super::Landed(Hit);
+
+	if (UPrimitiveComponent* Root = Cast<UPrimitiveComponent>(GetRootComponent()))
+	{
+		Root->ClearMoveIgnoreActors();
+		Root->ClearMoveIgnoreComponents();
+	}
+}
+
 
 void APortalProjectCharacter::ServerRPC_LeftClick_Implementation()
 {

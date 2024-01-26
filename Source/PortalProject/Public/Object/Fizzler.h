@@ -30,6 +30,9 @@ public:
 	UStaticMeshComponent* Plane;
 
 	UPROPERTY(EditAnywhere)
+	UMaterialInstanceDynamic* PlaneMat;
+
+	UPROPERTY(EditAnywhere)
 	UBoxComponent* Box;
 
 protected:

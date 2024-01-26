@@ -197,6 +197,7 @@ public:
 
 	UFUNCTION()
 	void OnPortalDestroyed(EPortalType Type);
-
+	
+	virtual void Landed(const FHitResult& Hit) override;
 };
 
