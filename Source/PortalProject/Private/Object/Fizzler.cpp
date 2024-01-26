@@ -3,7 +3,10 @@
 
 #include "Object/Fizzler.h"
 
+#include "FCTween.h"
+#include "NiagaraFunctionLibrary.h"
 #include "Components/BoxComponent.h"
+#include "Kismet/KismetMaterialLibrary.h"
 #include "Object/Portal_Bullet.h"
 #include "PortalProject/PortalProjectCharacter.h"
 
@@ -34,7 +37,13 @@ void AFizzler::BoxBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor*
 	if (APortal_Bullet* Bullet = Cast<APortal_Bullet>(OtherActor))
 	{
 		Bullet->Destroy();
-		// TODO: add animation?
+
+		FCTween::Play(0, 1,
+			[&](const float T) {
+				PlaneMat->SetScalarParameterValue(TEXT("Intensity"), (10000 * T) + 100);
+			},
+			0.25f,
+			EFCEase::Smoothstep)->SetYoyo(true);
 	}
 }
 
@@ -42,6 +51,9 @@ void AFizzler::BoxBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor*
 void AFizzler::BeginPlay()
 {
 	Super::BeginPlay();
+
+	PlaneMat = UKismetMaterialLibrary::CreateDynamicMaterialInstance(GetWorld(), Plane->GetMaterial(0));
+	Plane->SetMaterial(0, PlaneMat);
 	Box->OnComponentBeginOverlap.AddDynamic(this, &AFizzler::BoxBeginOverlap);
 }
 

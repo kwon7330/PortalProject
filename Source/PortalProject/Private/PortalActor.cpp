@@ -179,8 +179,11 @@ void APortalActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	ADummyPortal* Dummy = GetWorld()->SpawnActorDeferred<ADummyPortal>(DummyPortalClass, SpawnTransform, nullptr,
 	                                                                   nullptr,
 	                                                                   ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
-	Dummy->Type = Type;
-	UGameplayStatics::FinishSpawningActor(Dummy, SpawnTransform);
+	if (Dummy)
+	{
+		Dummy->Type = Type;
+		UGameplayStatics::FinishSpawningActor(Dummy, SpawnTransform);	
+	}
 	
 	switch (Type) {
 	case EPortalType::Player1Blue:
@@ -314,7 +317,7 @@ void APortalActor::OnActorDetectionEndOverlap(UPrimitiveComponent* OverlappedCom
 {
 	DetectedActors.RemoveSwap(OtherActor);
 
-	OverlappedComponent->ClearMoveIgnoreActors();
+	ResetCollisionIgnoredActors();
 }
 
 void APortalActor::LinkWithOtherPortal()
