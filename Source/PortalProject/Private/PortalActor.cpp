@@ -143,7 +143,10 @@ void APortalActor::BeginPlay()
 	FCTween::Play(0, 1,
 		[&](const float T)
 		{
-			SetActorScale3D(FVector::OneVector * T);
+			if (this)
+			{
+				SetActorScale3D(FVector::OneVector * T);
+			}
 		},
 		0.5);
 
@@ -171,7 +174,7 @@ void APortalActor::Tick(float DeltaTime)
 void APortalActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
-
+	
 	ResetCollisionIgnoredActors();
 	
 	FTransform SpawnTransform = GetActorTransform();
