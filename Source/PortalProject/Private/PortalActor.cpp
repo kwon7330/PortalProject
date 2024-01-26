@@ -392,7 +392,7 @@ void APortalActor::CheckDetectedActors()
 
 				if (ACharacter* Char = Cast<ACharacter>(a))
 				{
-					PRINTLOG(TEXT("Adding Force!"))
+					//RINTLOG(TEXT("Adding Force!"))
 					FVector TowardsPortal = ForwardDirection->GetComponentLocation() - b->GetActorLocation();
 					TowardsPortal.Normalize();
 					Char->GetCharacterMovement()->AddForce(TowardsPortal * 5000);
@@ -503,11 +503,11 @@ FRotator APortalActor::UpdateRotation(const FRotator& OldRotation) const
 
 FVector APortalActor::UpdateVelocity(const FVector& OldVelocity) const
 {
-	PRINTLOG(TEXT("OLD VECTOR: %1.f, %1.f, %1.f"), OldVelocity.X, OldVelocity.Y, OldVelocity.Z)
+	//PRINTLOG(TEXT("OLD VECTOR: %1.f, %1.f, %1.f"), OldVelocity.X, OldVelocity.Y, OldVelocity.Z)
 	
 	FVector Normalized = OldVelocity.GetSafeNormal();
 
-	PRINTLOG(TEXT("NORMAL: %1.f, %1.f, %1.f"), Normalized.X, Normalized.Y, Normalized.Z);
+	//PRINTLOG(TEXT("NORMAL: %1.f, %1.f, %1.f"), Normalized.X, Normalized.Y, Normalized.Z);
 	
 	Normalized = UKismetMathLibrary::InverseTransformDirection(GetActorTransform(), Normalized);
 	Normalized = UKismetMathLibrary::MirrorVectorByNormal(Normalized, FVector(1, 0, 0));
@@ -652,20 +652,20 @@ void APortalActor::TeleportChar(ACharacter* Char)
 	}
 	
 	FVector UpdatedVelocity = UpdateVelocity(PreVelocity);
-	PRINTLOG(TEXT("Updated Velocity: %.1f, %.1f, %.1f"), UpdatedVelocity.X, UpdatedVelocity.Y, UpdatedVelocity.Z)
+	//PRINTLOG(TEXT("Updated Velocity: %.1f, %.1f, %.1f"), UpdatedVelocity.X, UpdatedVelocity.Y, UpdatedVelocity.Z)
 
 	FVector TV = LinkedPortal->ForwardDirection->GetForwardVector() * AfterTeleportVelocity;
-	PRINTLOG(TEXT("TVelocity: %.1f %.1f %.1f"), TV.X, TV.Y, TV.Z);
+	//PRINTLOG(TEXT("TVelocity: %.1f %.1f %.1f"), TV.X, TV.Y, TV.Z);
 
 	FVector NewVelocity = UpdatedVelocity + TV;
 	NewVelocity = NewVelocity.BoundToCube(3900.f);
-	PRINTLOG(TEXT("New Velocity: %.1f %.1f %.1f"), NewVelocity.X, NewVelocity.Y, NewVelocity.Z);
+	//PRINTLOG(TEXT("New Velocity: %.1f %.1f %.1f"), NewVelocity.X, NewVelocity.Y, NewVelocity.Z);
 	
 	MoveComp->Velocity = NewVelocity;
 	MoveComp->UpdateComponentVelocity();
 
 	FVector NewVel = MoveComp->Velocity;
-	PRINTLOG(TEXT("New MoveComp Velocity: %.1f %.1f %.1f"), NewVel.X, NewVel.Y, NewVel.Z);
+	//PRINTLOG(TEXT("New MoveComp Velocity: %.1f %.1f %.1f"), NewVel.X, NewVel.Y, NewVel.Z);
 
 	
 	// TODO: Smooth Orientation
