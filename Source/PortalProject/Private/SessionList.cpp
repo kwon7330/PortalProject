@@ -20,6 +20,8 @@ void USessionList::Set(const FSessionInfo& SessionInfo)
 	txt_SessionNumber->SetText(FText::FromString(FString::Printf(TEXT("%d"),SessionInfo.RoomIndex)));
 	txt_RoomName->SetText(FText::FromString(SessionInfo.RoomName));
 	txt_HostName->SetText(FText::FromString(SessionInfo.HostName));
+
+	SessionNumber = SessionInfo.RoomIndex;
 }
 
 void USessionList::JoinSession()
