@@ -4,6 +4,7 @@
 #include "Object/InteractButton.h"
 
 #include "Components/BoxComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "Object/MovingFloor.h"
 #include "Object/SphereBallFactory.h"
@@ -19,12 +20,12 @@ AInteractButton::AInteractButton()
 	SetRootComponent(Trigger);
 	Trigger->SetBoxExtent(FVector(50,50,32));
 	
-	ButtonMesh = CreateDefaultSubobject<UStaticMeshComponent>("ButtonMesh");
+	ButtonMesh = CreateDefaultSubobject<USkeletalMeshComponent>("ButtonMesh");
 	ButtonMesh->SetupAttachment(Trigger);
-	ConstructorHelpers::FObjectFinder<UStaticMesh>TempMesh(TEXT("/Script/Engine.StaticMesh'/Game/Resources/Button/SM_Button.SM_Button'"));
+	ConstructorHelpers::FObjectFinder<USkeletalMesh>TempMesh(TEXT("/Script/Engine.SkeletalMesh'/Game/Resources/Button/button_-_from_portal_2_original.button_-_from_portal_2_original'"));
 	if(TempMesh.Succeeded())
 	{
-		ButtonMesh->SetStaticMesh(TempMesh.Object);
+		ButtonMesh->SetSkeletalMesh(TempMesh.Object);
 	}
 
 	bReplicates = true;
@@ -82,10 +83,26 @@ void AInteractButton::EndOverlap(UPrimitiveComponent* OverlappedComponent, AActo
 	}
 }
 
+void AInteractButton::MultiRPC_EndOverlap_Implementation()
+{
+	ButtonMesh->PlayAnimation(ButtonUpAnim, false);
+	
+	FVector SpawnSound = ButtonMesh->GetComponentLocation();
+	UGameplayStatics::SpawnSoundAtLocation(GetWorld(),ButtonUPSound,SpawnSound);
+}
+
+void AInteractButton::MultiRPC_OnOverlap_Implementation()
+{
+	ButtonMesh->PlayAnimation(ButtonDownAnim, false);
+	
+	FVector SpawnSound = ButtonMesh->GetComponentLocation();
+	UGameplayStatics::SpawnSoundAtLocation(GetWorld(),ButtonDownSound,SpawnSound);
+}
 
 
 void AInteractButton::ServerRPC_OnOverlap_Implementation()
 {
+	MultiRPC_OnOverlap();
 	if(MovingFloor)
 	{
 		MovingFloor->MultiRPC_FloorAct();
@@ -100,6 +117,7 @@ void AInteractButton::ServerRPC_OnOverlap_Implementation()
 
 void AInteractButton::ServerRPC_EndOverlap_Implementation()
 {
+	MultiRPC_EndOverlap();
 	MovingFloor->MultiRPC_ReturnAct();
 }
 

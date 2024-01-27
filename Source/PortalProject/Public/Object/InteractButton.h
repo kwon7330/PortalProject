@@ -36,7 +36,7 @@ public:
 	UPROPERTY(VisibleDefaultsOnly)
 	UBoxComponent* Trigger;
 	UPROPERTY(VisibleDefaultsOnly)
-	UStaticMeshComponent* ButtonMesh;
+	USkeletalMeshComponent* ButtonMesh;
 
 	UPROPERTY(EditAnywhere)
 	ASphereBallFactory* BallFactory;
@@ -55,7 +55,26 @@ public:
 	UFUNCTION(Server,Reliable)
 	void ServerRPC_EndOverlap();
 
+	UFUNCTION(NetMulticast,Unreliable)
+	void MultiRPC_OnOverlap();
 
+	UFUNCTION(NetMulticast,Unreliable)
+	void MultiRPC_EndOverlap();
+
+
+	
+	UPROPERTY(EditAnywhere)
+	USoundBase* ButtonDownSound;
+	UPROPERTY(EditAnywhere)
+	USoundBase* ButtonUPSound;
+
+	UPROPERTY(EditAnywhere)
+	UAnimSequence* ButtonDownAnim;
+	UPROPERTY(EditAnywhere)
+	UAnimSequence* ButtonUpAnim;
+
+
+	
 	UPROPERTY(Replicated)
 	bool bisOverlap;
 };
