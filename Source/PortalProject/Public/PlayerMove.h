@@ -50,6 +50,10 @@ public:
 	UInputAction* LookAction;
 
 
+	UPROPERTY(EditAnywhere)
+	USoundBase* MoveSound1;
+	UPROPERTY(EditAnywhere)
+	USoundBase* MoveSound2;
 	
 protected:
 	
@@ -60,6 +64,12 @@ protected:
 
 
 public:
-	
+	UFUNCTION(Server,Reliable)
+	void ServerRPC_Move();
+	UFUNCTION(NetMulticast,Unreliable)
+	void MultiRPC_Move();
+
+	void FootStepSound();
+
 	
 };

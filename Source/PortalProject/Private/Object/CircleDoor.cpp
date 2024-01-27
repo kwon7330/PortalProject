@@ -4,6 +4,7 @@
 #include "Object/CircleDoor.h"
 
 #include "CircleDoorAnim.h"
+#include "Kismet/GameplayStatics.h"
 
 
 ACircleDoor::ACircleDoor()
@@ -52,6 +53,8 @@ void ACircleDoor::MultiRPC_DoorClose_Implementation()
 {
 	MeshComp->PlayAnimation(CloseDoorAnim, false);
 	MeshComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	FVector SpawnSound = MeshComp->GetComponentLocation();
+	UGameplayStatics::SpawnSoundAtLocation(GetWorld(),DoorOpenSound,SpawnSound);
 }
 
 void ACircleDoor::ServerRPC_DoorClose_Implementation()
@@ -63,6 +66,8 @@ void ACircleDoor::MultiRPC_DoorOpen_Implementation()
 {
 	MeshComp->PlayAnimation(OpenDoorAnim, false);
 	MeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	FVector SpawnSound = MeshComp->GetComponentLocation();
+	UGameplayStatics::SpawnSoundAtLocation(GetWorld(),DoorCloseSound,SpawnSound);
 }
 
 void ACircleDoor::ServerRPC_DoorOpen_Implementation()

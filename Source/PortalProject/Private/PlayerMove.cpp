@@ -6,6 +6,9 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "GameFramework/Character.h"
+#include "GameFramework/PawnMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Net/UnrealNetwork.h"
 #include "PortalProject/PortalProjectCharacter.h"
 
 
@@ -13,6 +16,7 @@ UPlayerMove::UPlayerMove()
 {
 	
 	PrimaryComponentTick.bCanEverTick = true;
+	
 }
 
 
@@ -92,3 +96,30 @@ void UPlayerMove::StopJump()
 {
 	Self->StopJumping();
 }
+
+void UPlayerMove::ServerRPC_Move_Implementation()
+{
+	
+}
+
+void UPlayerMove::FootStepSound()
+{
+	
+	float RandomNum = FMath::FRand();
+	FVector SpawnSound = Self->GetMesh()->GetComponentLocation();
+	if(RandomNum<0.3f)
+	{
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(),MoveSound1,SpawnSound);
+	}
+	else UGameplayStatics::PlaySoundAtLocation(GetWorld(),MoveSound2,SpawnSound);
+
+	
+}
+
+
+
+void UPlayerMove::MultiRPC_Move_Implementation()
+{
+	FootStepSound();
+}
+

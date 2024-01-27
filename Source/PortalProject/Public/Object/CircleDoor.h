@@ -33,7 +33,12 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	UAnimSequence* CloseDoorAnim;
-	
+
+	UPROPERTY(EditAnywhere)
+	USoundBase* DoorOpenSound;
+
+	UPROPERTY(EditAnywhere)
+	USoundBase* DoorCloseSound;
 	
 	void DoorOpen();
 	void DoorClose();
