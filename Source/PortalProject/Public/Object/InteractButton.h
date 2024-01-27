@@ -7,9 +7,12 @@
 #include "GameFramework/Actor.h"
 #include "InteractButton.generated.h"
 
+class AIndicatorLight;
 class ASphereBallFactory;
 class AMovingFloor;
 class UBoxComponent;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FButtonStatusChanged, bool, bButtonStatus);
 
 UCLASS()
 class PORTALPROJECT_API AInteractButton : public AActor
@@ -28,24 +31,12 @@ public:
 	
 	virtual void Tick(float DeltaTime) override;
 
+	FButtonStatusChanged OnButtonStatusChanged;
 
 	UPROPERTY(VisibleDefaultsOnly)
 	UBoxComponent* Trigger;
 	UPROPERTY(VisibleDefaultsOnly)
-	USkeletalMeshComponent* ButtonMesh;
-
-	UPROPERTY(EditAnywhere)
-	UAnimSequence* ButtonDownAnim;
-
-	UPROPERTY(EditAnywhere)
-	UAnimSequence* ButtonUpAnim;
-
-	UPROPERTY(EditAnywhere)
-	USoundBase* ButtonDownSoundBase;
-
-	UPROPERTY(EditAnywhere)
-	USoundBase* ButtonUPSoundBase;
-
+	UStaticMeshComponent* ButtonMesh;
 
 	UPROPERTY(EditAnywhere)
 	ASphereBallFactory* BallFactory;
@@ -63,11 +54,6 @@ public:
 	void ServerRPC_OnOverlap();
 	UFUNCTION(Server,Reliable)
 	void ServerRPC_EndOverlap();
-
-	UFUNCTION(NetMulticast,Unreliable)
-	void MultiRPC_OnOverLap();
-	UFUNCTION(NetMulticast,Unreliable)
-	void MultiRPC_EndOverLap();
 
 
 	UPROPERTY(Replicated)

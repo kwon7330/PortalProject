@@ -32,11 +32,10 @@ void APortalProjectGameMode::HandleStartingNewPlayer_Implementation(APlayerContr
 		return;
 	}
 
-	// PBody와 Atlas가 이미 있을때는 종료시킴
-	if (PBody && Atlas)
+	/*if (PBody && Atlas)
 	{
-		UKismetSystemLibrary::QuitGame(GetWorld(), NewPlayer, EQuitPreference::Quit, false);
-	}
+		//UKismetSystemLibrary::QuitGame(GetWorld(), NewPlayer, EQuitPreference::Quit, false);
+	}*/
 
 	// PlayerStart 찾기
 	TArray<AActor*> PlayerStarts;
@@ -66,7 +65,7 @@ void APortalProjectGameMode::HandleStartingNewPlayer_Implementation(APlayerContr
 		NewChar->PlayerType = EPlayerType::PBody;
 		PBody = NewPlayer;
 	}
-	else if (!Atlas)
+	else
 	{
 		NewChar->PlayerType = EPlayerType::Atlas;
 		Atlas = NewPlayer;

@@ -55,7 +55,7 @@ void UPortal_GameInstance::OnCreateSessionComplete(FName SessionName, bool bWasS
 	UE_LOG(LogTemp,Warning,TEXT("OncreateSessionComplete!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"))
 	if(bWasSuccessful)
 	{
-		GetWorld()->ServerTravel(TEXT("/Game/Portal/KHO/Maps/Room02-1_KHO?listen"));
+		GetWorld()->ServerTravel(TEXT("/Game/Portal/KDJ/Maps/Room01-4_SM_KDJ?listen"));
 	}
 }
 
@@ -93,6 +93,8 @@ void UPortal_GameInstance::OnFindSessionComplete(bool bWasSuccessful)
 		FString HostName;
 		SearchResults.Session.SessionSettings.Get(FName("HostName"),SessionInfo.HostName);
 		FString OwnerName = SearchResults.Session.OwningUserName;
+		SessionInfo.HostName = OwnerName;
+		
 		int32 MaxPlayerCount = SearchResults.Session.SessionSettings.NumPublicConnections;
 		int32 CurrentPlayerCount = MaxPlayerCount - SearchResults.Session.NumOpenPublicConnections;
 		SessionInfo.PlayerCount = FString::Printf(TEXT("(%d/%d)"),CurrentPlayerCount,MaxPlayerCount);

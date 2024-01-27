@@ -65,7 +65,7 @@ void APortal_Bullet::Tick(float DeltaTime)
 void APortal_Bullet::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Bullet Overlapped: %s"), *OtherActor->GetActorNameOrLabel());
+	//UE_LOG(LogTemp, Warning, TEXT("Bullet Overlapped: %s"), *OtherActor->GetActorNameOrLabel());
 
 	APortal_Tablet* Tablet = Cast<APortal_Tablet>(OtherActor);
 	if (Tablet != nullptr)

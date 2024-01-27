@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "Portal_Screen.generated.h"
 
+class UBoxComponent;
+
 UCLASS()
 class PORTALPROJECT_API APortal_Screen : public AActor
 {
@@ -25,6 +27,9 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	USkeletalMeshComponent* MeshComp;
+
+	UPROPERTY(EditAnywhere)
+	UBoxComponent* BoxComp;
 
 	UPROPERTY(EditAnywhere)
 	FRotator RotBase;

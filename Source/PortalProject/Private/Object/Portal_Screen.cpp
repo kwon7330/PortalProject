@@ -3,6 +3,8 @@
 
 #include "Object/Portal_Screen.h"
 
+#include "Components/BoxComponent.h"
+
 
 APortal_Screen::APortal_Screen()
 {
@@ -14,8 +16,14 @@ APortal_Screen::APortal_Screen()
 	if(TempMesh.Succeeded())
 	{
 		MeshComp->SetSkeletalMesh(TempMesh.Object);
-		MeshComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	}
+
+	MeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	
+	BoxComp = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComp"));
+	BoxComp->SetupAttachment(RootComponent);
+	BoxComp->SetCollisionProfileName(FName("BlockAllDynamic"));
+	
 	bReplicates = true;
 }
 
@@ -58,8 +66,8 @@ void APortal_Screen::MultiRPC_ResetScreen_Implementation()
 	// FRotator ResetRot = FMath::Lerp(ActivatedRot, RotBase, Time * 0.02f);
 	// MeshComp->SetRelativeRotation(ResetRot);
 	MeshComp->SetVisibility(true);
-	MeshComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	
+	//MeshComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	BoxComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 }
 
 void APortal_Screen::MultiRPC_ScreenMove_Implementation()
@@ -71,7 +79,8 @@ void APortal_Screen::MultiRPC_ScreenMove_Implementation()
 	// MeshComp->SetRelativeRotation(ActivatedRot);
 
 	MeshComp->SetVisibility(false);
-	MeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	//MeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	BoxComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 

@@ -4,8 +4,6 @@
 #include "Object/InteractButton.h"
 
 #include "Components/BoxComponent.h"
-#include "EntitySystem/MovieSceneEntitySystemRunner.h"
-#include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "Object/MovingFloor.h"
 #include "Object/SphereBallFactory.h"
@@ -21,12 +19,12 @@ AInteractButton::AInteractButton()
 	SetRootComponent(Trigger);
 	Trigger->SetBoxExtent(FVector(50,50,32));
 	
-	ButtonMesh = CreateDefaultSubobject<USkeletalMeshComponent>("ButtonMesh");
+	ButtonMesh = CreateDefaultSubobject<UStaticMeshComponent>("ButtonMesh");
 	ButtonMesh->SetupAttachment(Trigger);
-	ConstructorHelpers::FObjectFinder<USkeletalMesh>TempMesh(TEXT("/Script/Engine.SkeletalMesh'/Game/Resources/Button/button_-_from_portal_2_original.button_-_from_portal_2_original'"));
+	ConstructorHelpers::FObjectFinder<UStaticMesh>TempMesh(TEXT("/Script/Engine.StaticMesh'/Game/Resources/Button/SM_Button.SM_Button'"));
 	if(TempMesh.Succeeded())
 	{
-		ButtonMesh->SetSkeletalMesh(TempMesh.Object);
+		ButtonMesh->SetStaticMesh(TempMesh.Object);
 	}
 
 	bReplicates = true;
@@ -55,7 +53,8 @@ void AInteractButton::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor
 	auto Player = Cast<APortalProjectCharacter>(OtherActor);
 	if(Player != nullptr)
 	{
-		MultiRPC_OnOverLap();
+		OnButtonStatusChanged.Broadcast(true);
+		
 		if(MovingFloor)
 		{
 			UE_LOG(LogTemp,Warning,TEXT("isMovingFloor"));
@@ -74,39 +73,19 @@ void AInteractButton::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor
 void AInteractButton::EndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	 bisOverlap = false;
-	MultiRPC_EndOverLap();
+	bisOverlap = false;
+	OnButtonStatusChanged.Broadcast(false);
 	if(MovingFloor)
 	{
 		UE_LOG(LogTemp,Warning,TEXT("isMovingFloor"));
 		ServerRPC_EndOverlap();
-		
 	}
-	
 }
 
-
-
-void AInteractButton::MultiRPC_OnOverLap_Implementation()
-{
-	UE_LOG(LogTemp,Warning,TEXT("PlayAnimation"));
-	ButtonMesh->PlayAnimation(ButtonDownAnim,false);
-	FVector SpawnSound = ButtonMesh->GetComponentLocation();
-	UGameplayStatics::PlaySoundAtLocation(GetWorld(),ButtonDownSoundBase,SpawnSound);
-}
-
-void AInteractButton::MultiRPC_EndOverLap_Implementation()
-{
-	UE_LOG(LogTemp,Warning,TEXT("PlayAnimation"));
-	ButtonMesh->PlayAnimation(ButtonUpAnim,false);
-	FVector SpawnSound = ButtonMesh->GetComponentLocation();
-	UGameplayStatics::PlaySoundAtLocation(GetWorld(),ButtonUPSoundBase,SpawnSound);
-}
 
 
 void AInteractButton::ServerRPC_OnOverlap_Implementation()
 {
-	UE_LOG(LogTemp,Warning,TEXT("ServerRPC_OnOverLap"));
 	if(MovingFloor)
 	{
 		MovingFloor->MultiRPC_FloorAct();
@@ -121,8 +100,6 @@ void AInteractButton::ServerRPC_OnOverlap_Implementation()
 
 void AInteractButton::ServerRPC_EndOverlap_Implementation()
 {
-	UE_LOG(LogTemp,Warning,TEXT("ServerRPC_EndOverLap"));
-	MultiRPC_EndOverLap();
 	MovingFloor->MultiRPC_ReturnAct();
 }
 
@@ -130,5 +107,4 @@ void AInteractButton::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(AInteractButton, bisOverlap);
-	
 }
