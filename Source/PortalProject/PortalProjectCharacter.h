@@ -194,6 +194,9 @@ public:
 	
 	UFUNCTION()
 	void ShootBullet(bool bIsLeftClick);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void PlayShootAnim();
 	
 // =============== UI =========================
 public:

@@ -258,6 +258,7 @@ void APortalProjectCharacter::MultiRPC_RightClick_Implementation()
 
 void APortalProjectCharacter::ShootBullet(bool bIsLeftClick)
 {
+	PlayShootAnim();
 	
 	APlayerController* PC = Cast<APlayerController>(Controller);
 	check(PC);

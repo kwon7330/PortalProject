@@ -164,6 +164,9 @@ public:
 	UPROPERTY(EditAnywhere)
 	USoundBase* PortalOpenSound;
 
+	UPROPERTY()
+	USoundConcurrency* SoundConcurrency;
+
 	UFUNCTION(NetMulticast,Unreliable)
 	void MultiRPC_PortalOpenSound();
 };
