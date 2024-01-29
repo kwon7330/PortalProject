@@ -182,6 +182,11 @@ void APortalActor::Tick(float DeltaTime)
 void APortalActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
+
+	if (EndPlayReason != EEndPlayReason::Destroyed)
+	{
+		return;
+	}
 	
 	ResetCollisionIgnoredActors();
 	
@@ -195,7 +200,7 @@ void APortalActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
 		Dummy->Type = Type;
 		UGameplayStatics::FinishSpawningActor(Dummy, SpawnTransform);	
 	}
-	
+
 	switch (Type) {
 	case EPortalType::Player1Blue:
 		if (PortalManager->PurplePortal)
