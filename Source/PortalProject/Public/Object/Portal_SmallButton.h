@@ -54,5 +54,11 @@ public:
 	void ServerRPC_ButtonInteract();
 	UFUNCTION(Server,Reliable)
 	void ServerRPC_SpButtonInteract();
+
+	UPROPERTY(EditAnywhere)
+	USoundBase* SwitchActSound;
+
+	UFUNCTION(NetMulticast,Unreliable)
+	void MultiRPC_ButtonInteract();
 	
 };
