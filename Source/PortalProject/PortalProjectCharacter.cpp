@@ -65,6 +65,9 @@ APortalProjectCharacter::APortalProjectCharacter()
 	//(X=636.894156,Y=-55.584951,Z=-101.822835)
 	AttachComp-> SetRelativeLocation(FVector(636.f,-55.f,-101.f));
 
+	MeshGunComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh Gun Comp"));
+	MeshGunComponent->SetupAttachment(GetMesh(), FName("GunSocket"));
+	
 	// 플레이어 시점 고정.
 	bUseControllerRotationYaw = true;
 	
@@ -88,6 +91,12 @@ void APortalProjectCharacter::BeginPlay()
 		}
 		
 		GetMesh()->SetVisibleInSceneCaptureOnly(true);
+		MeshGunComponent->SetVisibleInSceneCaptureOnly(true);
+		PortalGun->SetHiddenInSceneCapture(true);
+	}
+	else
+	{
+		PortalGun->SetVisibility(false);
 	}
 
 	// Create UI
@@ -249,6 +258,7 @@ void APortalProjectCharacter::MultiRPC_RightClick_Implementation()
 
 void APortalProjectCharacter::ShootBullet(bool bIsLeftClick)
 {
+	PlayShootAnim();
 	
 	APlayerController* PC = Cast<APlayerController>(Controller);
 	check(PC);

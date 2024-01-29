@@ -194,6 +194,9 @@ public:
 	
 	UFUNCTION()
 	void ShootBullet(bool bIsLeftClick);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void PlayShootAnim();
 	
 // =============== UI =========================
 public:
@@ -211,6 +214,10 @@ public:
 
 // ================================================
 
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly)
+	UStaticMeshComponent* MeshGunComponent;
+	
+// ==================================
 private:
 	UPROPERTY(ReplicatedUsing = "OnRep_HP")
 	float HP {2.f};

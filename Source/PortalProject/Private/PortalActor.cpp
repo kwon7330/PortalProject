@@ -38,7 +38,8 @@ APortalActor::APortalActor()
 		PortalCamera(CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("Portal Camera"))),
 		PortalVfxComp(CreateDefaultSubobject<UNiagaraComponent>(TEXT("Portal VFX Comp"))),
 		BacksideDetection(CreateDefaultSubobject<UBoxComponent>(TEXT("Backside Detection"))),
-		PlaneBox(CreateDefaultSubobject<UBoxComponent>(TEXT("Plane Box")))
+		PlaneBox(CreateDefaultSubobject<UBoxComponent>(TEXT("Plane Box"))),
+		SoundConcurrency(CreateDefaultSubobject<USoundConcurrency>(TEXT("Sound Concur")))
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -88,7 +89,7 @@ APortalActor::APortalActor()
 // Called when the game starts or when spawned
 void APortalActor::BeginPlay()
 {
-	PRINTLOG(TEXT("BEGIN Owner: %s"), GetOwner() ? *GetOwner()->GetActorNameOrLabel(): TEXT("None"))
+	//PRINTLOG(TEXT("BEGIN Owner: %s"), GetOwner() ? *GetOwner()->GetActorNameOrLabel(): TEXT("None"))
 	Super::BeginPlay();
 
 	World = GetWorld();
@@ -145,6 +146,9 @@ void APortalActor::BeginPlay()
 	ActorDetection->OnComponentBeginOverlap.AddDynamic(this, &APortalActor::OnActorDetectionBeginOverlap);
 	ActorDetection->OnComponentEndOverlap.AddDynamic(this, &APortalActor::OnActorDetectionEndOverlap);
 
+	SoundConcurrency->Concurrency.MaxCount = 1;
+	SoundConcurrency->Concurrency.ResolutionRule = EMaxConcurrentResolutionRule::PreventNew;
+
 	FCTween::Play(0, 1,
 		[&](const float T)
 		{
@@ -156,8 +160,7 @@ void APortalActor::BeginPlay()
 		0.5);
 
 	
-	PRINTLOG(TEXT("END Owner: %s"), GetOwner() ? *GetOwner()->GetActorNameOrLabel(): TEXT("None"))
-
+	//PRINTLOG(TEXT("END Owner: %s"), GetOwner() ? *GetOwner()->GetActorNameOrLabel(): TEXT("None"))
 	MultiRPC_PortalOpenSound();
 }
 
@@ -171,8 +174,6 @@ void APortalActor::Tick(float DeltaTime)
 		UpdateSceneCaptureRecursive(FVector(), FRotator());
 		CheckViewportSize();
 		CheckIfShouldTeleport();
-		//DrawDebugPoint(World, LinkedPortal->PortalCamera->GetComponentLocation(), 10, FColor::Red);
-		//DrawDebugCamera(World, LinkedPortal->PortalCamera->GetComponentLocation(), LinkedPortal->PortalCamera->GetComponentRotation(),90.0, 2.f);
 	}
 	TickRecentlyTeleported(DeltaTime);
 	CheckDetectedActors();
@@ -228,7 +229,7 @@ void APortalActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void APortalActor::OnRep_LinkedPortal()
 {
-	PRINTLOG(TEXT("LinkedPortalRepped"))
+	//PRINTLOG(TEXT("LinkedPortalRepped"))
 	LinkWithOtherPortal();
 }
 
@@ -717,6 +718,8 @@ void APortalActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 void APortalActor::MultiRPC_PortalOpenSound_Implementation()
 {
 	FVector SpawnSound = RootComp->GetComponentLocation();
-	UGameplayStatics::SpawnSoundAtLocation(GetWorld(),PortalOpenSound,SpawnSound);
+
+	UGameplayStatics::SpawnSoundAtLocation(GetWorld(), PortalOpenSound, SpawnSound, FRotator::ZeroRotator,
+		1, 1, 0, nullptr, SoundConcurrency);
 }
 
