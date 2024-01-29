@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "DoorSystem.generated.h"
 
+class ACircleDoor;
 class ADoorActor;
 class UBoxComponent;
 
@@ -33,6 +34,9 @@ public:
 	UPROPERTY(EditAnywhere)
 	ADoorActor* Door;
 
+	UPROPERTY(EditAnywhere)
+	ACircleDoor* CircleDoor;
+
 
 	
 
@@ -52,4 +56,8 @@ public:
 
 	UFUNCTION(Server,Reliable)
 	void ServerRPC_DoorClose();
+
+	UFUNCTION(Server,Reliable)
+	void ServerRPC_CircleDoorOpen();
+	
 };

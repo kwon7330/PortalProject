@@ -4,6 +4,7 @@
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
+#include "Object/CircleDoor.h"
 #include "Object/DoorActor.h"
 #include "Object/Portal_Screen.h"
 #include "PortalProject/PortalProjectCharacter.h"
@@ -52,6 +53,10 @@ void ADoorSystem::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Ot
 			//플레이어가 오버랩 됬을때 문이 열리는 시스템을 만든다.
 			ServerRPC_DoorOpen();
 		}
+		else if(CircleDoor && CheckBox.Num() == 2)
+		{
+			ServerRPC_CircleDoorOpen();
+		}
 		
 	}
 
@@ -65,19 +70,42 @@ void ADoorSystem::EndOverlap(UPrimitiveComponent* OverlappedComponent,
 	auto Player = Cast<APortalProjectCharacter>(OtherActor);
 
 	CheckBox.Remove(Player);
+
 }
 
+
+
+void ADoorSystem::ServerRPC_CircleDoorOpen_Implementation()
+{
+	if(CircleDoor)
+	{
+		CircleDoor->DoorOpen();
+	}
+}
 
 
 void ADoorSystem::ServerRPC_DoorOpen_Implementation()
 {
-	Door->DoorActivated();
+	if(Door)
+	{
+		Door->DoorActivated();
+		
+	}
 }
 
 void ADoorSystem::ServerRPC_DoorClose_Implementation()
 {
-	Door->DoorReturn();
+	if(Door)
+	{
+		Door->DoorReturn();
+	}
 }
+
+
+
+
+
+
 
 
 void ADoorSystem::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
