@@ -115,6 +115,19 @@ void APortalProjectCharacter::BeginPlay()
 		PM->OnPortalCreated.AddUniqueDynamic(this, &APortalProjectCharacter::OnPortalCreated);
 		PM->OnPortalDestroyed.AddUniqueDynamic(this, &APortalProjectCharacter::OnPortalDestroyed);
 	}
+
+	MeshGunComponent->SetRelativeLocationAndRotation(
+		FVector(-23.16, -1.87, -11.49),
+		FRotator(-37.75, -152.96, -324.16));
+	
+	if (PlayerType == EPlayerType::Atlas)
+	{
+		GetMesh()->SetSkeletalMesh(AtlasMesh);
+		GetMesh()->SetAnimClass(AtlasAnimBP->GetAnimBlueprintGeneratedClass());
+		MeshGunComponent->SetRelativeLocationAndRotation(
+			FVector(6.04, 14.64, 4.59),
+		FRotator(-338.29, 85.73, -739.46));
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////// Input
