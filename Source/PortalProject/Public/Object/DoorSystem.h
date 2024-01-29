@@ -9,6 +9,9 @@
 class ADoorActor;
 class UBoxComponent;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FPlayerDoorStateChanged, EPlayerType, Player, bool, bAdded);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDoorOpened);
+
 UCLASS()
 class PORTALPROJECT_API ADoorSystem : public AActor
 {
@@ -22,11 +25,14 @@ protected:
 	
 	virtual void BeginPlay() override;
 
-public:	
+public:
+
+	UPROPERTY(BlueprintAssignable)
+	FPlayerDoorStateChanged OnPlayerDoorStateChanged;
+
+	UPROPERTY(BlueprintAssignable)
+	FDoorOpened OnDoorOpened;
 	
-	virtual void Tick(float DeltaTime) override;
-
-
 	UPROPERTY(EditAnywhere)
 	UBoxComponent* TriggerBox;
 

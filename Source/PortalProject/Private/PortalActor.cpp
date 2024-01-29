@@ -408,8 +408,16 @@ void APortalActor::ResetCollisionIgnoredActors()
 {
 	for (auto a: CollisionModifiedActors)
 	{
+		if (!a)
+		{
+			return;
+		}
 		for (auto b: CollisionIgnoreActors)
 		{
+			if (!b)
+			{
+				return;
+			}
 			Cast<UPrimitiveComponent>(a->GetRootComponent())->IgnoreActorWhenMoving(b, false);
 		}
 	}
