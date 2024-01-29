@@ -200,6 +200,10 @@ public:
 
 // ================================================
 
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly)
+	UStaticMeshComponent* MeshGunComponent;
+	
+// ==================================
 private:
 	UPROPERTY(ReplicatedUsing = "OnRep_HP")
 	float HP {2.f};

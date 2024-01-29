@@ -88,7 +88,7 @@ APortalActor::APortalActor()
 // Called when the game starts or when spawned
 void APortalActor::BeginPlay()
 {
-	PRINTLOG(TEXT("BEGIN Owner: %s"), GetOwner() ? *GetOwner()->GetActorNameOrLabel(): TEXT("None"))
+	//PRINTLOG(TEXT("BEGIN Owner: %s"), GetOwner() ? *GetOwner()->GetActorNameOrLabel(): TEXT("None"))
 	Super::BeginPlay();
 
 	World = GetWorld();
@@ -156,7 +156,7 @@ void APortalActor::BeginPlay()
 		0.5);
 
 	
-	PRINTLOG(TEXT("END Owner: %s"), GetOwner() ? *GetOwner()->GetActorNameOrLabel(): TEXT("None"))
+	//PRINTLOG(TEXT("END Owner: %s"), GetOwner() ? *GetOwner()->GetActorNameOrLabel(): TEXT("None"))
 }
 
 // Called every frame
@@ -226,7 +226,7 @@ void APortalActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void APortalActor::OnRep_LinkedPortal()
 {
-	PRINTLOG(TEXT("LinkedPortalRepped"))
+	//PRINTLOG(TEXT("LinkedPortalRepped"))
 	LinkWithOtherPortal();
 }
 

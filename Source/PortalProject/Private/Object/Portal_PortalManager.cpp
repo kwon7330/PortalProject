@@ -77,6 +77,26 @@ void APortal_PortalManager::RequestPortal_Implementation(EPortalType Type, class
 
 	if (Tablet->PortalActor)
 	{
+		if (BluePortal == Tablet->PortalActor)
+		{
+			BluePortal = nullptr;
+		}
+
+		if (PurplePortal == Tablet->PortalActor)
+		{
+			PurplePortal = nullptr;
+		}
+
+		if (OrangePortal == Tablet->PortalActor)
+		{
+			OrangePortal = nullptr;
+		}
+
+		if (RedPortal == Tablet->PortalActor)
+		{
+			RedPortal = nullptr;
+		}
+		
 		Tablet->PortalActor->Destroy();
 		Tablet->PortalActor = nullptr;
 	}
