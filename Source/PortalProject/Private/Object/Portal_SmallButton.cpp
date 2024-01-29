@@ -4,6 +4,7 @@
 #include "Object/Portal_SmallButton.h"
 
 #include "Components/CapsuleComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Object/Portal_Screen.h"
 #include "Object/SphereBallFactory.h"
 #include "PortalProject/PortalProjectCharacter.h"
@@ -65,15 +66,24 @@ void APortal_SmallButton::Interact(APortalProjectCharacter* Character)
 	
 }
 
+void APortal_SmallButton::MultiRPC_ButtonInteract_Implementation()
+{
+	FVector SpawnSound = MeshComp->GetComponentLocation();
+	UGameplayStatics::SpawnSoundAtLocation(GetWorld(),SwitchActSound,SpawnSound);
+}
+
 void APortal_SmallButton::ServerRPC_SpButtonInteract_Implementation()
 {
 	Factory->FallingBall();
+	MultiRPC_ButtonInteract();
 }
 
 void APortal_SmallButton::ServerRPC_ButtonInteract_Implementation()
 {
 	UE_LOG(LogTemp,Warning,TEXT("CallMoveScreen"));
 	Screen->ScreenMove();
+	MultiRPC_ButtonInteract();
+
 }
 
 

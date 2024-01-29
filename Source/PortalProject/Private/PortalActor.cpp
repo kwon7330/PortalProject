@@ -157,6 +157,7 @@ void APortalActor::BeginPlay()
 
 	
 	//PRINTLOG(TEXT("END Owner: %s"), GetOwner() ? *GetOwner()->GetActorNameOrLabel(): TEXT("None"))
+	MultiRPC_PortalOpenSound();
 }
 
 // Called every frame
@@ -710,5 +711,11 @@ void APortalActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 
 	DOREPLIFETIME(APortalActor, LinkedPortal);
 	DOREPLIFETIME(APortalActor, Type);
+}
+
+void APortalActor::MultiRPC_PortalOpenSound_Implementation()
+{
+	FVector SpawnSound = RootComp->GetComponentLocation();
+	UGameplayStatics::SpawnSoundAtLocation(GetWorld(),PortalOpenSound,SpawnSound);
 }
 

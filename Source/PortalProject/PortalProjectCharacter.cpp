@@ -209,7 +209,13 @@ void APortalProjectCharacter::PushButton()
 	UE_LOG(LogTemp,Warning,TEXT("PushButton"));
 	
 }
-	
+
+void APortalProjectCharacter::MultiRPC_LeftClick_Implementation()
+{
+	FVector SpawnSound = PortalGun->GetComponentLocation();
+	UGameplayStatics::SpawnSoundAtLocation(GetWorld(),ShootingSound1,SpawnSound);
+}
+
 
 void APortalProjectCharacter::ServerRPC_CheckObject_Implementation()
 {
@@ -242,6 +248,12 @@ void APortalProjectCharacter::ServerRPC_CheckObject_Implementation()
 			}		
 		}
 	}
+}
+
+void APortalProjectCharacter::MultiRPC_RightClick_Implementation()
+{
+	FVector SpawnSound = PortalGun->GetComponentLocation();
+	UGameplayStatics::SpawnSoundAtLocation(GetWorld(),ShootingSound2,SpawnSound);
 }
 
 void APortalProjectCharacter::ShootBullet(bool bIsLeftClick)
@@ -431,11 +443,13 @@ void APortalProjectCharacter::PossessedBy(AController* NewController)
 void APortalProjectCharacter::ServerRPC_LeftClick_Implementation()
 {
 	ShootBullet(true);
+	MultiRPC_LeftClick();
 }
 
 void APortalProjectCharacter::ServerRPC_RightClick_Implementation()
 {
 	ShootBullet(false);
+	MultiRPC_RightClick();
 }
 
 void APortalProjectCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
