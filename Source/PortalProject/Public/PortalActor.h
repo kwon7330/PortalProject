@@ -96,6 +96,12 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "Portal|Mat")
 	class UNiagaraComponent* PortalVfxComp;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Portal|Mat")
+	class UMaterial* PortalUnopenedMatBase;
+
+	UPROPERTY(VisibleAnywhere, Category = "Portal|Mat")
+	class UMaterialInstanceDynamic* PortalUnopenedMatInst;
+
 	UPROPERTY(VisibleAnywhere, Category = "Portal")
 	UBoxComponent* BacksideDetection;
 	

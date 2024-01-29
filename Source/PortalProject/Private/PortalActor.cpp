@@ -99,7 +99,12 @@ void APortalActor::BeginPlay()
 	// Set up the material and texture for the portal plane.
 	check(PortalBaseMat);
 	PortalMat = UKismetMaterialLibrary::CreateDynamicMaterialInstance(World, PortalBaseMat);
-	PortalPlane->SetMaterial(0, PortalMat);
+	//PortalPlane->SetMaterial(0, PortalMat);
+
+	check(PortalUnopenedMatBase)
+	PortalUnopenedMatInst = UKismetMaterialLibrary::CreateDynamicMaterialInstance(World, PortalUnopenedMatBase);
+	PortalUnopenedMatInst->SetVectorParameterValue(TEXT("PortalColor"), *PortalColorMap.Find(Type));
+	PortalPlane->SetMaterial(0, PortalUnopenedMatInst);
 	
 	const FVector2D ViewPortSize = UWidgetLayoutLibrary::GetViewportSize(World);
 	PortalRenderTarget = UKismetRenderingLibrary::CreateRenderTarget2D(World, (int32)ViewPortSize.X, (int32)ViewPortSize.Y);
@@ -349,7 +354,7 @@ void APortalActor::LinkWithOtherPortal()
 void APortalActor::UnlinkPortal()
 {
 	this->LinkedPortal = nullptr;
-	PortalPlane->SetMaterial(0, PortalBaseMat);
+	PortalPlane->SetMaterial(0, PortalUnopenedMatInst);
 	PortalCamera->ClearHiddenComponents();
 }
 
