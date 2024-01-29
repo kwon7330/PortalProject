@@ -201,6 +201,11 @@ void APortalActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
 		UGameplayStatics::FinishSpawningActor(Dummy, SpawnTransform);	
 	}
 
+	if (!PortalManager)
+	{
+		return;
+	}
+	
 	switch (Type) {
 	case EPortalType::Player1Blue:
 		if (PortalManager->PurplePortal)
@@ -228,8 +233,11 @@ void APortalActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
 		break;
 	}
 
-	PortalManager->OnPortalDestroyed.Broadcast(Type);
-	PortalManager->BroadcastPortalDeleted(Type);
+	if (PortalManager)
+	{
+		PortalManager->OnPortalDestroyed.Broadcast(Type);
+		PortalManager->BroadcastPortalDeleted(Type);	
+	}
 }
 
 void APortalActor::OnRep_LinkedPortal()
