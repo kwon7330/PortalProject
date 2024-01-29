@@ -25,6 +25,10 @@ APortal_Tablet::APortal_Tablet()
 	SpawnPoint = CreateDefaultSubobject<UArrowComponent>(TEXT("SpawnPoint"));
 	SpawnPoint -> SetupAttachment(MeshComp);
 	SpawnPoint -> SetRelativeScale3D(FVector(0.01,1,1));
+
+	bReplicates = true;
+	bAlwaysRelevant = true;
+	bNetLoadOnClient = true;
 }
 
 

@@ -12,6 +12,7 @@ UCLASS()
 class PORTALPROJECT_API AIndicatorPanel : public AActor
 {
 	GENERATED_BODY()
+	
 	// #################################
 	// ########### PROPERTIES ##########
 	// #################################

@@ -13,7 +13,7 @@
 ADoorSystem::ADoorSystem()
 {
  	
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
 	TriggerBox = CreateDefaultSubobject<UBoxComponent>("TriggerBox");
 	SetRootComponent(TriggerBox);
@@ -33,12 +33,6 @@ void ADoorSystem::BeginPlay()
 }
 
 
-void ADoorSystem::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
-
 void ADoorSystem::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
@@ -48,6 +42,8 @@ void ADoorSystem::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Ot
 	if(Player != nullptr)
 	{
 		CheckBox.AddUnique(Player);
+		OnPlayerDoorStateChanged.Broadcast(Player->PlayerType, true);
+		
 		if(Door && CheckBox.Num() == 2)
 		{
 			//플레이어가 오버랩 됬을때 문이 열리는 시스템을 만든다.
@@ -68,9 +64,12 @@ void ADoorSystem::EndOverlap(UPrimitiveComponent* OverlappedComponent,
 	AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
 	auto Player = Cast<APortalProjectCharacter>(OtherActor);
-
-	CheckBox.Remove(Player);
-
+	
+	if (Player)
+	{
+		CheckBox.Remove(Player);
+		OnPlayerDoorStateChanged.Broadcast(Player->PlayerType, false);
+	}
 }
 
 
@@ -89,7 +88,7 @@ void ADoorSystem::ServerRPC_DoorOpen_Implementation()
 	if(Door)
 	{
 		Door->DoorActivated();
-		
+		OnDoorOpened.Broadcast();
 	}
 }
 
