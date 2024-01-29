@@ -159,4 +159,11 @@ public:
 	void TeleportObject(AActor* Actor);
 	
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&) const override;
+
+
+	UPROPERTY(EditAnywhere)
+	USoundBase* PortalOpenSound;
+
+	UFUNCTION(NetMulticast,Unreliable)
+	void MultiRPC_PortalOpenSound();
 };

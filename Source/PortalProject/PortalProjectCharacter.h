@@ -123,6 +123,13 @@ public:
 
 	void PickupCube();
 	void ReleaseCube();
+
+
+	UPROPERTY(EditAnywhere)
+	USoundBase* ShootingSound1;
+
+	UPROPERTY(EditAnywhere)
+	USoundBase* ShootingSound2;
 	
 //=================================================================================================================================	
 	UPROPERTY(EditAnywhere)
@@ -177,9 +184,13 @@ public:
 	
 	UFUNCTION(Server,Reliable)
 	void ServerRPC_LeftClick();
+	UFUNCTION(NetMulticast,Unreliable)
+	void MultiRPC_LeftClick();
 
 	UFUNCTION(Server,Reliable)
 	void ServerRPC_RightClick();
+	UFUNCTION(NetMulticast,Unreliable)
+	void MultiRPC_RightClick();
 	
 	UFUNCTION()
 	void ShootBullet(bool bIsLeftClick);
