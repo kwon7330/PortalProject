@@ -34,6 +34,6 @@ public:
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="WallSettings")
 	UArrowComponent* SpawnPoint;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	class APortalActor* PortalActor;
 };

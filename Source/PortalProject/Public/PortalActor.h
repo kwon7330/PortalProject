@@ -155,7 +155,9 @@ public:
 	void CheckIfShouldTeleport();
 	bool CheckIfPointCrossingPortal(const FVector& Point, const FVector& PortalLocation, const FVector& PortalNormal);
 
+	UFUNCTION(BlueprintCallable)
 	void TeleportChar(ACharacter* Char);
+	
 	void TeleportObject(AActor* Actor);
 	
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&) const override;
