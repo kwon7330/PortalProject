@@ -10,7 +10,6 @@
 #include "UObject/ConstructorHelpers.h"
 
 APortalProjectGameMode::APortalProjectGameMode()
-	: Super()
 {
 	// set default pawn class to our Blueprinted character
 	static ConstructorHelpers::FClassFinder<APawn> PlayerPawnClassFinder(TEXT("/Script/Engine.Blueprint'/Game/Portal/KHO/Test/BP_ThirdPersonCharacter_Child.BP_ThirdPersonCharacter_Child'"));
@@ -19,6 +18,8 @@ APortalProjectGameMode::APortalProjectGameMode()
 	{
 		DefaultPawnClass = PlayerPawnClassFinder.Class;	
 	}
+
+	bUseSeamlessTravel = true;
 }
 
 void APortalProjectGameMode::HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer)
