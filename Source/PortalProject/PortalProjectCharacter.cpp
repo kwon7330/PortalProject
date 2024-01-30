@@ -7,6 +7,7 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "FCTween.h"
 #include "InputActionValue.h"
 #include "PlayerMove.h"
 #include "PlayerUI.h"
@@ -194,6 +195,19 @@ void APortalProjectCharacter::LeftClickPortal(const FInputActionValue& Value)
 	{
 		return;
 	}
+
+	FCTween::Play(0, 1,
+		[&] (const float T)
+		{
+			if (IsValid(this))
+			{
+				PortalGun->SetRelativeScale3D(FVector(0.1 + 0.020 * T));
+			}
+		},
+		0.25f,
+		EFCEase::InOutQuad)->SetYoyo(true);
+
+	
 	ServerRPC_LeftClick();
 }
 
@@ -206,6 +220,18 @@ void APortalProjectCharacter::RightClickPortal(const FInputActionValue& Value)
 	{
 		return;
 	}
+
+	FCTween::Play(0, 1,
+		[&] (const float T)
+		{
+			if (IsValid(this))
+			{
+				PortalGun->SetRelativeScale3D(FVector(0.1 + 0.020 * T));
+			}
+		},
+		0.25f,
+		EFCEase::InOutQuad)->SetYoyo(true);
+	
 	ServerRPC_RightClick();
 }
 
