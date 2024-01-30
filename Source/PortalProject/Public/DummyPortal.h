@@ -38,4 +38,7 @@ public:
 
 	UPROPERTY(BlueprintReadWrite)
 	FLinearColor Color;
+
+	UPROPERTY()
+	class UFCTweenUObject* TweenObj;
 };

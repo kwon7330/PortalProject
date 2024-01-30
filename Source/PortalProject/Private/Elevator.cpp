@@ -3,6 +3,8 @@
 
 #include "Elevator.h"
 
+#include "FCTween.h"
+
 
 // Sets default values
 AElevator::AElevator()
@@ -13,6 +15,7 @@ AElevator::AElevator()
 
 void AElevator::TravelToServer()
 {
+	FCTween::ClearActiveTweens();
 	GetWorld()->ServerTravel(TEXT("/Game/Portal/KHO/Maps/Room02_KHO"));
 }
 

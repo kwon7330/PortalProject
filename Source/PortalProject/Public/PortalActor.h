@@ -162,6 +162,8 @@ public:
 	
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&) const override;
 
+	UPROPERTY()
+	class UFCTweenUObject* FcTweenInstance;
 
 	UPROPERTY(EditAnywhere)
 	USoundBase* PortalOpenSound;

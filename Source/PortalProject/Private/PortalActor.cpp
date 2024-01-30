@@ -146,15 +146,15 @@ void APortalActor::BeginPlay()
 	ActorDetection->OnComponentBeginOverlap.AddDynamic(this, &APortalActor::OnActorDetectionBeginOverlap);
 	ActorDetection->OnComponentEndOverlap.AddDynamic(this, &APortalActor::OnActorDetectionEndOverlap);
 
-	FCTween::Play(0, 1,
+	FcTweenInstance = FCTween::Play(0, 1,
 		[&](const float T)
 		{
-			if (this)
+			if (IsValid(this))
 			{
 				SetActorScale3D(FVector::OneVector * T);
 			}
 		},
-		0.5);
+		0.5)->CreateUObject();
 
 	
 	//PRINTLOG(TEXT("END Owner: %s"), GetOwner() ? *GetOwner()->GetActorNameOrLabel(): TEXT("None"))

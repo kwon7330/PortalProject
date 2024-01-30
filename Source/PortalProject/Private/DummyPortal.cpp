@@ -38,12 +38,13 @@ void ADummyPortal::BeginPlay()
 	PlaneMeshMat->SetVectorParameterValue(TEXT("PortalColor"), Color);
 	PortalPlane->SetMaterial(0, PlaneMeshMat);
 	
-	FCTween::Play(1, 0,
+	TweenObj = FCTween::Play(1, 0,
 		[&](const float T)
 		{
 			SetActorScale3D(FVector::OneVector * T);
 		}, 0.4)
-	-> SetOnComplete([&] { Destroy(); });
+	-> SetOnComplete([&] { Destroy(); })
+	->CreateUObject();
 }
 
 // Called every frame
