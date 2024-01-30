@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "IndicatorLight.generated.h"
 
+class APortal_SmallButton;
 class AInteractButton;
 class USplineComponent;
 
@@ -36,6 +37,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	AInteractButton* ConnectedButton;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	APortal_SmallButton* ConnectedSmallButton;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FLinearColor EnabledColor;

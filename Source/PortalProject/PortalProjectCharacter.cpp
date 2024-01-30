@@ -124,6 +124,7 @@ void APortalProjectCharacter::BeginPlay()
 	{
 		GetMesh()->SetSkeletalMesh(AtlasMesh);
 		GetMesh()->SetAnimClass(AtlasAnimBP->GetAnimBlueprintGeneratedClass());
+		GetMesh()->AddRelativeLocation(FVector(0, 0, -30));
 		MeshGunComponent->SetRelativeLocationAndRotation(
 			FVector(-28.26, -2.16, -0.68),
 		FRotator(-29.48, -531.33, -995.88));
@@ -266,7 +267,7 @@ void APortalProjectCharacter::ServerRPC_CheckObject_Implementation()
 void APortalProjectCharacter::MultiRPC_RightClick_Implementation()
 {
 	FVector SpawnSound = PortalGun->GetComponentLocation();
-	UGameplayStatics::SpawnSoundAtLocation(GetWorld(),ShootingSound2,SpawnSound);
+	UGameplayStatics::SpawnSoundAtLocation(GetWorld(),ShootingSound1,SpawnSound);
 }
 
 void APortalProjectCharacter::ShootBullet(bool bIsLeftClick)

@@ -17,7 +17,6 @@
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PawnMovementComponent.h"
-#include "GameFramework/PhysicsVolume.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMaterialLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -38,8 +37,7 @@ APortalActor::APortalActor()
 		PortalCamera(CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("Portal Camera"))),
 		PortalVfxComp(CreateDefaultSubobject<UNiagaraComponent>(TEXT("Portal VFX Comp"))),
 		BacksideDetection(CreateDefaultSubobject<UBoxComponent>(TEXT("Backside Detection"))),
-		PlaneBox(CreateDefaultSubobject<UBoxComponent>(TEXT("Plane Box"))),
-		SoundConcurrency(CreateDefaultSubobject<USoundConcurrency>(TEXT("Sound Concur")))
+		PlaneBox(CreateDefaultSubobject<UBoxComponent>(TEXT("Plane Box")))
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -83,7 +81,9 @@ APortalActor::APortalActor()
 	PortalCamera->bCaptureOnMovement = false;
 	PortalCamera->bAlwaysPersistRenderingState = true;
 	
-	
+	SoundConcurrency = CreateDefaultSubobject<USoundConcurrency>(TEXT("Sound Councur"));
+	SoundConcurrency->Concurrency.MaxCount = 1;
+	SoundConcurrency->Concurrency.ResolutionRule = EMaxConcurrentResolutionRule::PreventNew;
 }
 
 // Called when the game starts or when spawned
@@ -145,9 +145,6 @@ void APortalActor::BeginPlay()
 	PlaneBox->OnComponentEndOverlap.AddDynamic(this, &APortalActor::OnPlaneBoxEndOverlap);
 	ActorDetection->OnComponentBeginOverlap.AddDynamic(this, &APortalActor::OnActorDetectionBeginOverlap);
 	ActorDetection->OnComponentEndOverlap.AddDynamic(this, &APortalActor::OnActorDetectionEndOverlap);
-
-	SoundConcurrency->Concurrency.MaxCount = 1;
-	SoundConcurrency->Concurrency.ResolutionRule = EMaxConcurrentResolutionRule::PreventNew;
 
 	FCTween::Play(0, 1,
 		[&](const float T)
@@ -291,6 +288,12 @@ void APortalActor::OnPlaneBoxBeginOverlap(UPrimitiveComponent* OverlappedCompone
 			// if simulating physics,
 			PrimitiveComponent->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Ignore);
 		}
+	}
+
+	if (APortalProjectCharacter* Char = Cast<APortalProjectCharacter>(OtherActor))
+	{
+		UGameplayStatics::PlaySound2D(GetWorld(), PortalEnterSound, 1, 1, 0,
+			nullptr, Char, true);
 	}
 	
 }
@@ -704,6 +707,9 @@ void APortalActor::TeleportChar(ACharacter* Char)
 	// Cut this frame
 	UGameplayStatics::GetPlayerCameraManager(World, 0)->SetGameCameraCutThisFrame();
 	//PortalCamera->bCameraCutThisFrame = true;
+
+	UGameplayStatics::PlaySound2D(GetWorld(), PortalExitSound, 1, 1, 0, nullptr,
+		Char, true);
 }
 
 void APortalActor::TeleportObject(AActor* Actor)
