@@ -16,7 +16,7 @@ AElevator::AElevator()
 void AElevator::TravelToServer()
 {
 	FCTween::ClearActiveTweens();
-	GetWorld()->ServerTravel(TEXT("/Game/Portal/KHO/Maps/Room02_KHO"));
+	GetWorld()->ServerTravel(TEXT("/Game/Portal/KDJ/Maps/Room02-3_KDJ"));
 }
 
 // Called when the game starts or when spawned
