@@ -166,7 +166,13 @@ public:
 	UPROPERTY(EditAnywhere)
 	USoundBase* PortalOpenSound;
 
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly)
+	USoundBase* PortalEnterSound;
+
+	UPROPERTY(EditDefaultsOnly)
+	USoundBase* PortalExitSound;
+
+	UPROPERTY(EditDefaultsOnly)
 	USoundConcurrency* SoundConcurrency;
 
 	UFUNCTION(NetMulticast,Unreliable)

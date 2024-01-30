@@ -34,6 +34,12 @@ public:
 	UPROPERTY(EditAnywhere)
 	FRotator RotBase;
 
+	UPROPERTY(EditDefaultsOnly)
+	USoundCue* TickTockSound;
+
+	UPROPERTY(EditDefaultsOnly)
+	UAudioComponent* AudioComponent;
+	
 	FRotator ActivatedRot;
 
 	UFUNCTION()

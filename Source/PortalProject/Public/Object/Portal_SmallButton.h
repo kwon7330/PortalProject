@@ -11,6 +11,8 @@ class ASphereBallFactory;
 class APortal_Screen;
 class UCapsuleComponent;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSmallButtonStatusChanged, bool, bActiveState);
+
 UCLASS()
 class PORTALPROJECT_API APortal_SmallButton : public AActor ,public IInteractable
 {
@@ -19,6 +21,9 @@ class PORTALPROJECT_API APortal_SmallButton : public AActor ,public IInteractabl
 public:	
 	
 	APortal_SmallButton();
+
+	UPROPERTY(BlueprintAssignable)
+	FSmallButtonStatusChanged OnSmallButtonStatusChanged;
 
 protected:
 	

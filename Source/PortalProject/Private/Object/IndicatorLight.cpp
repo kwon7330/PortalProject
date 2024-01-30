@@ -7,6 +7,7 @@
 #include "Components/SplineComponent.h"
 #include "Kismet/KismetMaterialLibrary.h"
 #include "Object/InteractButton.h"
+#include "Object/Portal_SmallButton.h"
 
 
 // Sets default values
@@ -44,6 +45,11 @@ void AIndicatorLight::BeginPlay()
 	if (ConnectedButton)
 	{
 		ConnectedButton->OnButtonStatusChanged.AddDynamic(this, &AIndicatorLight::ButtonStatusChanged);
+	}
+
+	if (ConnectedSmallButton)
+	{
+		ConnectedSmallButton->OnSmallButtonStatusChanged.AddDynamic(this, &AIndicatorLight::ButtonStatusChanged);
 	}
 }
 

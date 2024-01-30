@@ -115,6 +115,20 @@ void APortalProjectCharacter::BeginPlay()
 		PM->OnPortalCreated.AddUniqueDynamic(this, &APortalProjectCharacter::OnPortalCreated);
 		PM->OnPortalDestroyed.AddUniqueDynamic(this, &APortalProjectCharacter::OnPortalDestroyed);
 	}
+
+	MeshGunComponent->SetRelativeLocationAndRotation(
+		FVector(-23.16, -1.87, -11.49),
+		FRotator(-37.75, -152.96, -324.16));
+
+	if (PlayerType == EPlayerType::Atlas)
+	{
+		GetMesh()->SetSkeletalMesh(AtlasMesh);
+		GetMesh()->SetAnimClass(AtlasAnimBP->GetAnimBlueprintGeneratedClass());
+		GetMesh()->AddRelativeLocation(FVector(0, 0, -30));
+		MeshGunComponent->SetRelativeLocationAndRotation(
+			FVector(-28.26, -2.16, -0.68),
+		FRotator(-29.48, -531.33, -995.88));
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////// Input
@@ -253,7 +267,7 @@ void APortalProjectCharacter::ServerRPC_CheckObject_Implementation()
 void APortalProjectCharacter::MultiRPC_RightClick_Implementation()
 {
 	FVector SpawnSound = PortalGun->GetComponentLocation();
-	UGameplayStatics::SpawnSoundAtLocation(GetWorld(),ShootingSound2,SpawnSound);
+	UGameplayStatics::SpawnSoundAtLocation(GetWorld(),ShootingSound1,SpawnSound);
 }
 
 void APortalProjectCharacter::ShootBullet(bool bIsLeftClick)

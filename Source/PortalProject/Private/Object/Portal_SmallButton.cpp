@@ -70,6 +70,17 @@ void APortal_SmallButton::MultiRPC_ButtonInteract_Implementation()
 {
 	FVector SpawnSound = MeshComp->GetComponentLocation();
 	UGameplayStatics::SpawnSoundAtLocation(GetWorld(),SwitchActSound,SpawnSound);
+	OnSmallButtonStatusChanged.Broadcast(true);
+
+	FTimerHandle Handle;
+	GetWorld()->GetTimerManager().SetTimer(Handle,
+		FTimerDelegate::CreateLambda(
+			[&]
+			{
+				OnSmallButtonStatusChanged.Broadcast(false);
+			}),
+			5.0f,
+			false);
 }
 
 void APortal_SmallButton::ServerRPC_SpButtonInteract_Implementation()

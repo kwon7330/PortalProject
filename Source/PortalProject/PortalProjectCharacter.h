@@ -211,11 +211,17 @@ public:
 
 	UFUNCTION()
 	void OnPortalDestroyed(EPortalType Type);
-
+	
 // ================================================
 
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly)
 	UStaticMeshComponent* MeshGunComponent;
+
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly)
+	USkeletalMesh* AtlasMesh;
+
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly)
+	UAnimBlueprint* AtlasAnimBP;
 	
 // ==================================
 private:
