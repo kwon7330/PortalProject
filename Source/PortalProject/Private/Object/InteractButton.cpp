@@ -64,6 +64,7 @@ void AInteractButton::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor
 		}
 		else if(BallFactory)
 		{
+			MultiRPC_OnOverlap();
 			// 만약 월드 안에 모든 버튼이 눌린다면 공을 떨군다.
 			BallFactory->CheckButtonOverlap();
 		}
@@ -81,10 +82,13 @@ void AInteractButton::EndOverlap(UPrimitiveComponent* OverlappedComponent, AActo
 		UE_LOG(LogTemp,Warning,TEXT("isMovingFloor"));
 		ServerRPC_EndOverlap();
 	}
+
+	MultiRPC_EndOverlap();
 }
 
 void AInteractButton::MultiRPC_EndOverlap_Implementation()
 {
+	UE_LOG(LogTemp,Warning,TEXT("ButtonDownSound!!!"))
 	ButtonMesh->PlayAnimation(ButtonUpAnim, false);
 	
 	FVector SpawnSound = ButtonMesh->GetComponentLocation();
@@ -93,8 +97,8 @@ void AInteractButton::MultiRPC_EndOverlap_Implementation()
 
 void AInteractButton::MultiRPC_OnOverlap_Implementation()
 {
+	UE_LOG(LogTemp,Warning,TEXT("ButtonuUPSound!!!"))
 	ButtonMesh->PlayAnimation(ButtonDownAnim, false);
-	
 	FVector SpawnSound = ButtonMesh->GetComponentLocation();
 	UGameplayStatics::SpawnSoundAtLocation(GetWorld(),ButtonDownSound,SpawnSound);
 }
