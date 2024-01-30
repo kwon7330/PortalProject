@@ -3,7 +3,10 @@
 
 #include "Object/Portal_Screen.h"
 
+#include "Components/AudioComponent.h"
 #include "Components/BoxComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Sound/SoundCue.h"
 
 
 APortal_Screen::APortal_Screen()
@@ -23,6 +26,8 @@ APortal_Screen::APortal_Screen()
 	BoxComp = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComp"));
 	BoxComp->SetupAttachment(RootComponent);
 	BoxComp->SetCollisionProfileName(FName("BlockAllDynamic"));
+
+	AudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("Audio Comp"));
 	
 	bReplicates = true;
 }
@@ -31,7 +36,7 @@ APortal_Screen::APortal_Screen()
 void APortal_Screen::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	AudioComponent->Stop();
 }
 
 
@@ -55,7 +60,7 @@ void APortal_Screen::ServerRPC_ScreenMove_Implementation()
 {
 	MultiRPC_ScreenMove();
 	FTimerHandle TimerHandle;
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &APortal_Screen::ResetScreen, 3.0f, false);
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &APortal_Screen::ResetScreen, 5.0f, false);
 }
 
 void APortal_Screen::MultiRPC_ResetScreen_Implementation()
@@ -68,6 +73,7 @@ void APortal_Screen::MultiRPC_ResetScreen_Implementation()
 	MeshComp->SetVisibility(true);
 	//MeshComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	BoxComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	AudioComponent->Stop();
 }
 
 void APortal_Screen::MultiRPC_ScreenMove_Implementation()
@@ -81,6 +87,7 @@ void APortal_Screen::MultiRPC_ScreenMove_Implementation()
 	MeshComp->SetVisibility(false);
 	//MeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	BoxComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	AudioComponent->Play();
 }
 
 

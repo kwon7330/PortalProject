@@ -79,7 +79,7 @@ void APortal_SmallButton::MultiRPC_ButtonInteract_Implementation()
 			{
 				OnSmallButtonStatusChanged.Broadcast(false);
 			}),
-			3.0f,
+			5.0f,
 			false);
 }
 
