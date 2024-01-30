@@ -28,6 +28,8 @@ void USessionList::JoinSession()
 {
 	UE_LOG(LogTemp,Warning,TEXT("JoinSession@@@@@@@@@@@@@@@@@@@@@@@@"));
 
+	// 맵이 로딩 되는동안 실행될 UI를 넣는다.
+	
 	UE_LOG(LogTemp,Warning,TEXT("JoinSession"));
 	auto GI = Cast<UPortal_GameInstance>(GetWorld()->GetGameInstance());
 	if(GI)
